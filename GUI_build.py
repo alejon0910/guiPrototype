@@ -1,6 +1,9 @@
 import tkinter as tk
+import tkinter.ttk as ttk
 from scrollable_frame import VerticalScrolledFrame
 from track_build import TrackBuild
+import time
+
 
 class GUI(tk.Tk):
 
@@ -12,6 +15,9 @@ class GUI(tk.Tk):
         self.config(background="white")
         self.geometry("550x650")
         self.resizable(False, False)
+        self.style = ttk.Style()
+        self.style.theme_use("default")
+        self.style.configure("TProgressbar", thickness=3, troughcolor="white", background="black")
 
         self.icon_photos = {"clippr": tk.PhotoImage(file=r"images\clippr2.png"),
                             "home": tk.PhotoImage(file=r"images\home.png"),
@@ -26,16 +32,23 @@ class GUI(tk.Tk):
         self.browse_tab = VerticalScrolledFrame(self, width=422, height=10000, background="white")
 
         # Navigation buttons
-        self.clippr_icon = tk.Label(self, image=self.icon_photos["clippr"], activebackground="#1c1c1c", borderwidth=0, highlightthickness=0)
-        self.home_button = tk.Button(self, image=self.icon_photos["home"], activebackground="#1c1c1c", borderwidth=0, highlightthickness=0)
-        self.sounds_button = tk.Button(self, image=self.icon_photos["sounds"], activebackground="#1c1c1c", borderwidth=0, highlightthickness=0)
-        self.liked_button = tk.Button(self, image=self.icon_photos["liked"], activebackground="#1c1c1c", borderwidth=0, highlightthickness=0)
-        self.search_button = tk.Button(self, image=self.icon_photos["search"], activebackground="#1c1c1c", borderwidth=0, highlightthickness=0)
-        self.upload_button = tk.Button(self, image=self.icon_photos["upload"], activebackground="#1c1c1c", borderwidth=0, highlightthickness=0)
-        self.you_button = tk.Button(self, image=self.icon_photos["you"], activebackground="#1c1c1c", borderwidth=0, highlightthickness=0)
+        self.clippr_icon = tk.Label(self, image=self.icon_photos["clippr"], activebackground="#1c1c1c", borderwidth=0,
+                                    highlightthickness=0)
+        self.home_button = tk.Button(self, image=self.icon_photos["home"], activebackground="#1c1c1c", borderwidth=0,
+                                     highlightthickness=0)
+        self.sounds_button = tk.Button(self, image=self.icon_photos["sounds"], activebackground="#1c1c1c",
+                                       borderwidth=0, highlightthickness=0)
+        self.liked_button = tk.Button(self, image=self.icon_photos["liked"], activebackground="#1c1c1c", borderwidth=0,
+                                      highlightthickness=0)
+        self.search_button = tk.Button(self, image=self.icon_photos["search"], activebackground="#1c1c1c",
+                                       borderwidth=0, highlightthickness=0)
+        self.upload_button = tk.Button(self, image=self.icon_photos["upload"], activebackground="#1c1c1c",
+                                       borderwidth=0, highlightthickness=0, command=lambda x: self.add())
+        self.you_button = tk.Button(self, image=self.icon_photos["you"], activebackground="#1c1c1c", borderwidth=0,
+                                    highlightthickness=0)
 
         # "Welcome back" label
-        self.welcome_label = tk.Label(self.browse_tab, text="Welcome back, Alex", font=("SoleilXb-Italic",29),
+        self.welcome_label = tk.Label(self.browse_tab, text="Welcome back, Alex", font=("SoleilXb-Italic", 29),
                                       bg="white", borderwidth=0, highlightthickness=0)
 
         # Place tabs
@@ -55,33 +68,31 @@ class GUI(tk.Tk):
         self.tracks_test()
 
     def tracks_test(self):
-
         self.test_cover = r"images\testcover2.png"
 
         self.track1 = TrackBuild("evernowbeats", "suite.wav", "house", "chill", "synth", self.test_cover)
         self.track1.build(self.browse_tab, 1)
 
-
         self.track2 = TrackBuild("will.is.love", "crosswords.mp3", "dnb", "dark", "synth", self.test_cover)
-        self.track2.build(self.browse_tab, 5)
+        self.track2.build(self.browse_tab, 6)
 
         self.track3 = TrackBuild("emmalevin_tracks", "victory_sfx.mp3", "sfx", "upbeat", "piano", self.test_cover)
-        self.track3.build(self.browse_tab, 9)
+        self.track3.build(self.browse_tab, 11)
 
         self.track4 = TrackBuild("rahhbeats", "sunshine.wav", "hip-hop", "chill", "guitar", self.test_cover)
-        self.track4.build(self.browse_tab, 13)
+        self.track4.build(self.browse_tab, 16)
 
         self.track5 = TrackBuild("evernowbeats", "suite.wav", "house", "chill", "synth", self.test_cover)
-        self.track5.build(self.browse_tab, 17)
+        self.track5.build(self.browse_tab, 21)
 
         self.track6 = TrackBuild("will.is.love", "crosswords.mp3", "dnb", "dark", "synth", self.test_cover)
-        self.track6.build(self.browse_tab, 21)
+        self.track6.build(self.browse_tab, 26)
 
         self.track7 = TrackBuild("emmalevin_tracks", "victory_sfx.mp3", "sfx", "upbeat", "piano", self.test_cover)
-        self.track7.build(self.browse_tab, 25)
+        self.track7.build(self.browse_tab, 31)
 
         self.track8 = TrackBuild("rahhbeats", "sunshine.wav", "hip-hop", "chill", "guitar", self.test_cover)
-        self.track8.build(self.browse_tab, 29)
+        self.track8.build(self.browse_tab, 36)
 
 
 if __name__ == "__main__":
