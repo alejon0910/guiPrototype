@@ -16,13 +16,14 @@ class TrackBuild:
         self.playpng = tk.PhotoImage(file=r"images\play.png")
         self.pausepng = tk.PhotoImage(file=r"images\pause.png")
         self.playing = False
+        self.play_authorized = False
         self.brightener = ImageEnhance.Brightness(self.cover_image)
 
     def build(self, frame, row):
 
-        self.artist_label = tk.Label(frame, text=self.artist, font=("SoleilSb",12), bg="white")
+        self.artist_label = tk.Label(frame, text=self.artist, font=("Soleil-Book",12), bg="white")
         self.title_label = tk.Label(frame, text=self.title, font=("Soleil-Bold", 22), bg="white")
-        self.tags = tk.Label(frame, text=f"{self.genre}    {self.mood}    {self.instrument}", font=("SoleilBk", 8), bg="white", fg="#606060")
+        self.tags = tk.Label(frame, text=f"{self.genre}    {self.mood}    {self.instrument}", font=("Soleil-Book", 8), bg="white", fg="#606060")
         self.cover_canvas = tk.Canvas(frame, width=83, height=83, cursor="hand2", bd=0, relief="ridge", highlightthickness=0)
         self.cover_label = self.cover_canvas.create_image(41, 41, image=self.cover_photoimage)
         self.track_space = tk.Label(frame, text="", font=("Soleil-Bold", 12), bg="white")

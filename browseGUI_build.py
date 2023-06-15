@@ -5,7 +5,7 @@ from track_build import TrackBuild
 import time
 
 
-class GUI(tk.Tk):
+class browserGUI(tk.Tk):
 
     def __init__(self):
         super().__init__()
@@ -15,9 +15,6 @@ class GUI(tk.Tk):
         self.config(background="white")
         self.geometry("550x650")
         self.resizable(False, False)
-        self.style = ttk.Style()
-        self.style.theme_use("default")
-        self.style.configure("TProgressbar", thickness=3, troughcolor="white", background="black")
 
         self.icon_photos = {"clippr": tk.PhotoImage(file=r"images\clippr2.png"),
                             "home": tk.PhotoImage(file=r"images\home.png"),
@@ -35,20 +32,20 @@ class GUI(tk.Tk):
         self.clippr_icon = tk.Label(self, image=self.icon_photos["clippr"], activebackground="#1c1c1c", borderwidth=0,
                                     highlightthickness=0)
         self.home_button = tk.Button(self, image=self.icon_photos["home"], activebackground="#1c1c1c", borderwidth=0,
-                                     highlightthickness=0)
+                                     highlightthickness=0, cursor="hand2")
         self.sounds_button = tk.Button(self, image=self.icon_photos["sounds"], activebackground="#1c1c1c",
-                                       borderwidth=0, highlightthickness=0)
+                                       borderwidth=0, highlightthickness=0, cursor="hand2")
         self.liked_button = tk.Button(self, image=self.icon_photos["liked"], activebackground="#1c1c1c", borderwidth=0,
-                                      highlightthickness=0)
+                                      highlightthickness=0, cursor="hand2")
         self.search_button = tk.Button(self, image=self.icon_photos["search"], activebackground="#1c1c1c",
-                                       borderwidth=0, highlightthickness=0)
+                                       borderwidth=0, highlightthickness=0, cursor="hand2")
         self.upload_button = tk.Button(self, image=self.icon_photos["upload"], activebackground="#1c1c1c",
-                                       borderwidth=0, highlightthickness=0, command=lambda x: self.add())
+                                       borderwidth=0, highlightthickness=0, command=lambda x: self.add(), cursor="hand2")
         self.you_button = tk.Button(self, image=self.icon_photos["you"], activebackground="#1c1c1c", borderwidth=0,
-                                    highlightthickness=0)
+                                    highlightthickness=0, cursor="hand2")
 
         # "Welcome back" label
-        self.welcome_label = tk.Label(self.browse_tab, text="Welcome back, Alex", font=("SoleilXb-Italic", 29),
+        self.welcome_label = tk.Label(self.browse_tab, text="Welcome back, Alex", font=("SoleilW04-ExtraboldIt", 29),
                                       bg="white", borderwidth=0, highlightthickness=0)
 
         # Place tabs
@@ -68,7 +65,7 @@ class GUI(tk.Tk):
         self.tracks_test()
 
     def tracks_test(self):
-        self.test_cover = r"images\testcover2.png"
+        self.test_cover = r"images\testcover.png"
 
         self.track1 = TrackBuild("evernowbeats", "suite.wav", "house", "chill", "synth", self.test_cover)
         self.track1.build(self.browse_tab, 1)
@@ -93,8 +90,3 @@ class GUI(tk.Tk):
 
         self.track8 = TrackBuild("rahhbeats", "sunshine.wav", "hip-hop", "chill", "guitar", self.test_cover)
         self.track8.build(self.browse_tab, 36)
-
-
-if __name__ == "__main__":
-    menu = GUI()
-    menu.mainloop()
