@@ -18,6 +18,9 @@ class browserGUI(tk.Tk):
         self.upload = None
         self.current_id = id
 
+        self.conn = sqlite3.connect("database/clippr.sqlite3")
+        self.cursor = self.conn.cursor()
+
         self.get_username()
 
         self.icon_photos = {"clippr": tk.PhotoImage(file=r"GUI/images/clippr2.png"),
@@ -142,9 +145,6 @@ class browserGUI(tk.Tk):
             self.upload.clipprlogo_label.bind("<Destroy>", lambda x: self.allow_upload())
 
     def get_username(self):
-
-        self.conn = sqlite3.connect("database/clippr.sqlite3")
-        self.cursor = self.conn.cursor()
 
         get_username_query = f"""SELECT username FROM user WHERE id = ?"""
         self.cursor.execute(get_username_query, (self.current_id,))

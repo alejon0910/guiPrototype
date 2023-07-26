@@ -6,9 +6,11 @@ from just_playback import Playback
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from database.models import User, Track, Comment, Like
+from GUI.commentsGUI_build import commentsGUI
 import sqlite3
 
 engine = create_engine('sqlite:///database/clippr.sqlite3', echo=True)
+
 
 class TrackBuild:
 
@@ -40,6 +42,7 @@ class TrackBuild:
 
         self.playing = False
         self.play_authorized = False
+        self.comments = None
         self.playback = Playback()
         self.brightener = ImageEnhance.Brightness(self.cover_image)
 
@@ -58,11 +61,13 @@ class TrackBuild:
         self.cover_label = self.cover_canvas.create_image(41, 41, image=self.cover_photoimage)
         self.track_space = tk.Label(frame, text="", font=("Soleil-Bold", 12), bg="white")
         self.play_pause = self.cover_canvas.create_image(41, 41, image=self.playpng)
-        self.like_button = tk.Button(frame, image=self.heartpng, highlightthickness=0, borderwidth=0, command=self.like_track)
-        self.comment_button = tk.Button(frame, image=self.commentpng, highlightthickness=0, borderwidth=0)
+        self.like_button = tk.Button(frame, image=self.heartpng, highlightthickness=0, borderwidth=0,
+                                     command=self.like_track)
+        self.comment_button = tk.Button(frame, image=self.commentpng, highlightthickness=0, borderwidth=0,
+                                        command=self.open_comments)
 
         self.artist_label.grid(column=0, row=row, sticky="w", columnspan=10, padx=11, pady=(10, 0))
-        self.title_label.grid(column=0, row=row + 1, sticky="w", columnspan=5, padx=(10,0))
+        self.title_label.grid(column=0, row=row + 1, sticky="w", columnspan=5, padx=(10, 0))
         self.tags.grid(column=2, row=row + 2, sticky="w", padx=(10, 5))
         self.like_button.grid(column=0, row=row + 2, sticky="w", padx=(13, 5))
         self.comment_button.grid(column=1, row=row + 2, sticky="w", padx=(0, 5))
@@ -127,7 +132,6 @@ class TrackBuild:
             self.liked = False
             self.like_button.config(image=self.heartpng)
 
-
     def config_like(self):
 
         get_like_status_query = f"""SELECT id FROM like WHERE track_id = ? AND user_id = ?"""
@@ -139,3 +143,11 @@ class TrackBuild:
         else:
             self.liked = True
             self.like_button.config(image=self.heartedpng)
+
+    def open_comments(self):
+        if self.comments is None:
+            self.comments = commentsGUI(self.track_id, self.viewer_id)
+            self.comments.frame.bind("<Destroy>", lambda x: self.allow_comments())
+
+    def allow_comments(self):
+        self.comments = None
