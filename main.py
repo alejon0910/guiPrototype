@@ -1,9 +1,17 @@
-from browseGUI_build import browserGUI
-from accountGUI_build import signinGUI
+from GUI.browseGUI_build import browserGUI
+from GUI.loginGUI_build import loginGUI
+from ctypes import windll
 
-signin = signinGUI()
-signin.mainloop()
+windll.shcore.SetProcessDpiAwareness(1)
 
-if signin.access:
-    browser = browserGUI()
-    browser.mainloop()
+class App:
+    def __init__(self):
+
+        self.login = loginGUI(self)
+        self.login.mainloop()
+
+        if self.login.access:
+            browser = browserGUI(self, self.login.id)
+            browser.mainloop()
+
+app = App()
