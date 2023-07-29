@@ -117,7 +117,7 @@ class uploadGUI(tk.Toplevel):
         shutil.copy(self.cover_file, r"database/covers")
         shutil.copy(self.track_file, r"database/tracks")
 
-        self.title = self.title_entry.get()
+        self.title = self.title_entry.get().lower()
         self.artist = self.master.current_id
         self.genre = self.genre_dropdown.get()
         self.mood = self.mood_dropdown.get()

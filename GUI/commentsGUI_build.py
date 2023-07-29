@@ -5,6 +5,7 @@ from GUI.comment_build import CommentBuild
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from database.models import User, Track, Comment, Like
+import time
 
 engine = create_engine('sqlite:///database/clippr.sqlite3', echo=True)
 
@@ -36,8 +37,10 @@ class commentsGUI(tk.Toplevel):
         self.comments_title = tk.Label(self.frame, text="Comments", font=("SoleilXb", 23), bg="white", borderwidth=0, highlightthickness=0)
         self.add_comment_button = tk.Button(self.frame, image=self.icon_photos["plus"], highlightthickness=0, borderwidth=0, command=self.add_comment)
         self.nothing_yet_label = tk.Label(self.frame, text="nothing yet!", font=("SoleilLt", 16), bg="white", borderwidth=0, highlightthickness=0)
+        self.empty_label = tk.Label(self)
 
         self.frame.pack()
+        self.empty_label.pack(side=tk.BOTTOM)
         self.comments_title.grid(row=0, column=0, sticky="w", padx=(20,10), pady=(10,20))
         self.add_comment_button.grid(row=0, column=1, sticky="w", padx=0, pady=(10, 20))
 
@@ -59,11 +62,16 @@ class commentsGUI(tk.Toplevel):
     def add_comment(self):
         if self.comment_adder is None:
             self.comment_adder = addCommentGUI(self.track_id, self.user_id)
-            self.comment_adder.text_entry.bind("<Destroy>", self.allow_add_comment())
+            self.comment_adder.bind("<Destroy>", lambda x: [self.allow_add_comment()])
 
     def allow_add_comment(self):
+        self.refresh()
         self.comment_adder = None
 
+    def refresh(self):
+        self.empty_label.pack_forget()
+        self.frame.destroy()
+        self.build()
 
 class addCommentGUI(tk.Toplevel):
     def __init__(self, track_id, user_id):
@@ -107,4 +115,5 @@ class addCommentGUI(tk.Toplevel):
             sess.add(new_comment)
             sess.commit()
 
+        self.text_entry.destroy()
         self.destroy()

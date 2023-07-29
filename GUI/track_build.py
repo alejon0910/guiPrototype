@@ -147,7 +147,7 @@ class TrackBuild:
     def open_comments(self):
         if self.comments is None:
             self.comments = commentsGUI(self.track_id, self.viewer_id)
-            self.comments.frame.bind("<Destroy>", lambda x: self.allow_comments())
+            self.comments.empty_label.bind("<Destroy>", lambda x: self.allow_comments())
 
     def allow_comments(self):
         self.comments = None
