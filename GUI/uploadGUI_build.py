@@ -1,20 +1,11 @@
 import tkinter as tk
 from tkinter import filedialog
 import tkinter.ttk as ttk
-import os
-import shutil
 from PIL import Image, ImageTk
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
-from database.models import User, Track, Comment, Like
-import sqlite3
-
-engine = create_engine('sqlite:///database/clippr.sqlite3', echo=True)
-
 
 class uploadGUI(tk.Toplevel):
 
-    def __init__(self, master, current_id):
+    def __init__(self, master, controller):
         super(uploadGUI, self).__init__(master)
         self.transient(master)
 
@@ -22,35 +13,13 @@ class uploadGUI(tk.Toplevel):
         self.geometry("500x250")
         self.iconbitmap(r"GUI\images\icon.ico")
         self.resizable(False, False)
+        self.controller = controller
 
         self.icon_photos = {"clippr": tk.PhotoImage(file=r"GUI/images/clippruploadlogo.png"),
                             "empty_photo": tk.PhotoImage(file=r"GUI/images/emptyphoto.png"),
                             "select_file": tk.PhotoImage(file=r"GUI/images/select file.png"),
                             "post": tk.PhotoImage(file=r"GUI/images/post.png"),
                             "file_selected": tk.PhotoImage(file=r"GUI/images/file selected.png")}
-
-        self.genre_options = ["pop",
-                            "hip-hop",
-                            "edm",
-                            "rock",
-                            "alternative",
-                            "cinematic",
-                            "classical"]
-
-        self.mood_options = ["chill",
-                              "hype",
-                              "sad",
-                              "dark",
-                              "upbeat",
-                              "epic"]
-
-        self.instrument_options = ["piano",
-                                 "drums",
-                                 "bass",
-                                 "synth",
-                                 "guitar",
-                                 "strings",
-                                 "vocal"]
 
         self.build()
 
@@ -63,9 +32,9 @@ class uploadGUI(tk.Toplevel):
         self.title_entry = tk.Entry(self, background="#e0e0e0", highlightcolor="#b0b0b0", highlightthickness=1,
                                        relief="flat", fg="#b0b0b0", font=("SoleilLt-Italic", 12), width=24)
 
-        self.genre_dropdown = ttk.Combobox(self, state="readonly", values=self.genre_options, width=8, font=("SoleilLt-Italic", 8))
-        self.mood_dropdown = ttk.Combobox(self, state="readonly", values=self.mood_options, width=8, font=("SoleilLt-Italic", 8))
-        self.instrument_dropdown = ttk.Combobox(self, state="readonly", values=self.instrument_options, width=8,font=("SoleilLt-Italic", 8))
+        self.genre_dropdown = ttk.Combobox(self, state="readonly", values=self.controller.genre_options, width=8, font=("SoleilLt-Italic", 8))
+        self.mood_dropdown = ttk.Combobox(self, state="readonly", values=self.controller.mood_options, width=8, font=("SoleilLt-Italic", 8))
+        self.instrument_dropdown = ttk.Combobox(self, state="readonly", values=self.controller.instrument_options, width=8,font=("SoleilLt-Italic", 8))
 
         self.title_entry.insert(0, "Title (excl. filetype)")
         self.title_entry.bind("<Button-1>", lambda x: [self.title_clicked(), self.title_entry.config(fg="black")])
@@ -84,6 +53,7 @@ class uploadGUI(tk.Toplevel):
         self.post_button.place(x=19, y=154)
 
         self.cover_file = None
+        self.track_file = None
 
     def title_clicked(self):
 
@@ -94,7 +64,6 @@ class uploadGUI(tk.Toplevel):
     def select_track(self):
 
         self.track_file = filedialog.askopenfilename(filetypes=[("audio files", "*.mp3; *.wav")])
-        self.track_basename = os.path.basename(self.track_file)
         self.selectfile_button.config(image=self.icon_photos["file_selected"])
 
     def select_cover(self):
@@ -102,48 +71,17 @@ class uploadGUI(tk.Toplevel):
         self.cover_file = filedialog.askopenfilename(filetypes=[("image files", "*.png; *.jpg; *.jpeg")])
         self.cover = Image.open(self.cover_file)
         self.cover = self.cover.resize((168, 168))
-        self.cover_basename = os.path.basename(self.cover_file)
-        self.cover_photoimage = ImageTk.PhotoImage(self.cover)
-        self.emptyphoto_button.config(image=self.cover_photoimage)
+        self.cover = ImageTk.PhotoImage(self.cover)
+        self.emptyphoto_button.config(image=self.cover)
 
 
 
     def post_track(self):
-
-        if self.cover_file == None:
-            self.cover_file = r"GUI\images\testcover2.png"
-            self.cover_basename = os.path.basename(self.cover_file)
-
-        shutil.copy(self.cover_file, r"database/covers")
-        shutil.copy(self.track_file, r"database/tracks")
-
-        self.title = self.title_entry.get().lower()
-        self.artist = self.master.current_id
-        self.genre = self.genre_dropdown.get()
-        self.mood = self.mood_dropdown.get()
-        self.instrument = self.instrument_dropdown.get()
-        self.cover_file = r"database/covers/"+self.cover_basename
-        self.track_file = r"database/tracks/" + self.track_basename
-
-        self.add_filetype()
-
-        new_track = Track(title=self.title, artist=self.artist, genre=self.genre, mood=self.mood, instrument=self.instrument,
-                          sound_filepath=self.track_file, cover_filepath=self.cover_file)
-        with Session(engine) as sess:
-            sess.add(new_track)
-            sess.commit()
-
-        self.destroy()
+        if None not in [self.track_file, self.genre_dropdown.get(), self.mood_dropdown.get(), self.instrument_dropdown.get()]:
+            self.controller.post_track(self.title_entry.get().lower(), self.genre_dropdown.get(), self.mood_dropdown.get(),
+                                    self.instrument_dropdown.get(), self.track_file, self.cover_file)
+            self.destroy()
 
     def allow_upload(self):
         self.master.uploading = False
-
-    def add_filetype(self):
-
-        if self.title[-4] == ".":
-            self.title = self.title[:-4]
-
-        self.filetype = os.path.splitext(self.track_basename)[1]
-        self.title = self.title + self.filetype
-        self.title = self.title.replace(" ", "_")
 

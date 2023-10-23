@@ -2,13 +2,12 @@ import tkinter as tk
 from GUI.scrollable_frame import VerticalScrolledFrame
 from GUI.track_build import TrackBuild
 from GUI.uploadGUI_build import uploadGUI
-import sqlite3
 import tkinter.ttk as ttk
-import random
+from database.playback_controller import PlaybackController
 
 class browserGUI(tk.Tk):
 
-    def __init__(self, master, id):
+    def __init__(self, controller):
         super().__init__()
 
         self.title("clippr")
@@ -17,13 +16,9 @@ class browserGUI(tk.Tk):
         self.geometry("650x850")
         self.resizable(False, False)
         self.upload = None
-        self.current_id = id
         self.signed_out = False
-
-        self.conn = sqlite3.connect("database/clippr.sqlite3")
-        self.cursor = self.conn.cursor()
-
-        self.get_username()
+        self.controller = controller
+        self.playback_controller = PlaybackController()
 
         self.icon_photos = {"clippr": tk.PhotoImage(file=r"GUI/images/clippr2.png"),
                             "home": tk.PhotoImage(file=r"GUI/images/home.png"),
@@ -38,29 +33,6 @@ class browserGUI(tk.Tk):
                             "liked_title": tk.PhotoImage(file=r"GUI/images/biglikedicon.png"),
                             "blank": tk.PhotoImage()
                             }
-
-        self.genre_options = ["pop",
-                              "hip-hop",
-                              "edm",
-                              "rock",
-                              "alternative",
-                              "cinematic",
-                              "classical"]
-
-        self.mood_options = ["chill",
-                             "hype",
-                             "sad",
-                             "dark",
-                             "upbeat",
-                             "epic"]
-
-        self.instrument_options = ["piano",
-                                   "drums",
-                                   "bass",
-                                   "synth",
-                                   "guitar",
-                                   "strings",
-                                   "vocal"]
 
 
         # Tabs
@@ -86,7 +58,7 @@ class browserGUI(tk.Tk):
         self.signout_button = tk.Button(self, image=self.icon_photos["sign out"], activebackground="#1c1c1c",
                                         borderwidth=0, highlightthickness=0, cursor="hand2", command=self.sign_out)
 
-
+        self.nav_tab.bind("<Destroy>", lambda x: [self.playback_controller.destroy()])
 
         # Place tabs
         self.nav_tab.place(x=0, y=0)
@@ -115,22 +87,13 @@ class browserGUI(tk.Tk):
                                     bg="white", borderwidth=0, highlightthickness=0)
         self.title_label.grid(column=0, row=0, sticky="w", padx=(10, 0), pady=20, columnspan=99)
 
-        self.username_label = tk.Label(self.browse_tab, text=self.current_username, bg="white", fg="#1c1c1c",
+        self.username_label = tk.Label(self.browse_tab, text=self.controller.current_username, bg="white", fg="#1c1c1c",
                                        font=("SoleilXb", 15), anchor="e", bd=0, padx=0)
         self.username_label.grid(column=4, row=0, sticky="e", padx=15, pady=(26, 20), columnspan=99)
 
-        get_home_tracks_query = f"""SELECT id FROM track"""
-
-        self.cursor.execute(get_home_tracks_query)
-        self.track_list = self.cursor.fetchall()
-        self.display_list = self.generate_random_set()
-
-        index = 0
-
-        for i in self.display_list:
-            index += 1
-            self.new_track = TrackBuild(i, self.current_id)
-            self.new_track.build(self.browse_tab, ((5*index)-4))
+        for i in self.controller.fetch_home_results():
+            self.new_track = TrackBuild(i, self.controller, self.playback_controller)
+            self.new_track.build(self.browse_tab, ((5*i)-4))
 
     def browse_sounds(self):
 
@@ -143,14 +106,9 @@ class browserGUI(tk.Tk):
                                     bg="white", borderwidth=0, highlightthickness=0)
         self.title_label.grid(column=0, row=0, sticky="w", padx=(10, 0), pady=20, columnspan=99)
 
-        get_sounds_query = f"""SELECT id FROM track WHERE artist = ? ORDER BY id"""
-
-        self.cursor.execute(get_sounds_query, (self.current_id,))
-        self.track_list = self.cursor.fetchall()
-
-        for i in self.track_list:
-            self.new_track = TrackBuild(i[0], self.current_id)
-            self.new_track.build(self.browse_tab, ((5*i[0])-4))
+        for i in self.controller.fetch_sounds_results():
+            self.new_track = TrackBuild(i, self.controller, self.playback_controller)
+            self.new_track.build(self.browse_tab, ((5 * i) - 4))
 
     def browse_liked(self):
 
@@ -163,14 +121,9 @@ class browserGUI(tk.Tk):
                                     bg="white", borderwidth=0, highlightthickness=0)
         self.title_label.grid(column=0, row=0, sticky="w", padx=(10, 0), pady=20, columnspan=99)
 
-        get_liked_query = f"""SELECT id FROM track WHERE id IN (SELECT track_id FROM like WHERE user_id = ?)"""
-
-        self.cursor.execute(get_liked_query, (self.current_id,))
-        self.track_list = self.cursor.fetchall()
-
-        for i in self.track_list:
-            self.new_track = TrackBuild(i[0], self.current_id)
-            self.new_track.build(self.browse_tab, ((5*i[0])-4))
+        for i in self.controller.fetch_liked_results():
+            self.new_track = TrackBuild(i, self.controller, self.playback_controller)
+            self.new_track.build(self.browse_tab, ((5 * i) - 3))
 
     def open_search(self):
 
@@ -185,11 +138,11 @@ class browserGUI(tk.Tk):
 
         self.search_entry = tk.Entry(self.top_tab, background="#e0e0e0", highlightcolor="#b0b0b0", highlightthickness=1,
                                     relief="flat", fg="#b0b0b0", font=("SoleilLt-Italic", 20), width=27)
-        self.genre_dropdown = ttk.Combobox(self.top_tab, state="readonly", values=self.genre_options, width=18,
+        self.genre_dropdown = ttk.Combobox(self.top_tab, state="readonly", values=self.controller.genre_options, width=18,
                                            font=("SoleilLt-Italic", 8))
-        self.mood_dropdown = ttk.Combobox(self.top_tab, state="readonly", values=self.mood_options, width=18,
+        self.mood_dropdown = ttk.Combobox(self.top_tab, state="readonly", values=self.controller.mood_options, width=18,
                                           font=("SoleilLt-Italic", 8))
-        self.instrument_dropdown = ttk.Combobox(self.top_tab, state="readonly", values=self.instrument_options, width=18,
+        self.instrument_dropdown = ttk.Combobox(self.top_tab, state="readonly", values=self.controller.instrument_options, width=18,
                                                 font=("SoleilLt-Italic", 8))
 
         self.search_entry.grid(column=0, row=0, sticky="w", padx=(20, 0), pady=(20,10), columnspan=99)
@@ -204,63 +157,39 @@ class browserGUI(tk.Tk):
     def retrieve_search(self):
 
         self.search_term = self.search_entry.get().lower()
+        self.get_dropdown_options()
+        self.refresh_results()
+
+        self.track_list = self.controller.fetch_searched_results(self.search_term, self.genre_term, self.mood_term, self.instrument_term)
+
+        for i in self.track_list:
+            self.new_track = TrackBuild(i, self.controller, self.playback_controller)
+            self.new_track.build(self.browse_tab, ((5 * i) - 3))
+
+    def get_dropdown_options(self):
 
         if len(self.genre_dropdown.get()) != 0:
             self.genre_term = (self.genre_dropdown.get(),'')
         else:
-            self.genre_term = tuple(self.genre_options)
+            self.genre_term = tuple(self.controller.genre_options)
 
         if len(self.mood_dropdown.get()) != 0:
             self.mood_term = (self.mood_dropdown.get(),'')
         else:
-            self.mood_term = tuple(self.mood_options)
+            self.mood_term = tuple(self.controller.mood_options)
 
         if len(self.instrument_dropdown.get()) != 0:
             self.instrument_term = (self.instrument_dropdown.get(),'')
         else:
-            self.instrument_term = tuple(self.instrument_options)
-
-        self.refresh_results()
-
-
-        get_searched_artists_query = """SELECT id FROM user WHERE INSTR(username, ?) > 0"""
-        self.cursor.execute(get_searched_artists_query, (self.search_term,))
-        self.artists_tuple = tuple([x[0] for x in self.cursor.fetchall()] + [0,-1])
-
-        get_searched_query = f"""SELECT id FROM track WHERE (INSTR(title, ?) > 0 OR artist IN {self.artists_tuple}) AND genre IN {self.genre_term} AND mood IN {self.mood_term} AND instrument IN {self.instrument_term}"""
-        self.cursor.execute(get_searched_query, (self.search_term,))
-        self.track_list = self.cursor.fetchall()
-
-        for i in self.track_list:
-            self.new_track = TrackBuild(i[0], self.current_id)
-            self.new_track.build(self.browse_tab, ((5 * i[0]) - 3))
+            self.instrument_term = tuple(self.controller.instrument_options)
 
     def open_upload(self):
         if self.upload is None:
-            self.upload = uploadGUI(self, self.current_id)
+            self.upload = uploadGUI(self, self.controller)
             self.upload.clipprlogo_label.bind("<Destroy>", lambda x: self.allow_upload())
-
-    def get_username(self):
-
-        get_username_query = f"""SELECT username FROM user WHERE id = ?"""
-        self.cursor.execute(get_username_query, (self.current_id,))
-        self.current_username = self.cursor.fetchall()[0][0]
 
     def allow_upload(self):
         self.upload = None
-
-    def generate_random_set(self):
-
-        self.row_count = len(self.track_list)
-
-        randint_list = [random.randint(1, self.row_count) for x in range(10)]
-        randint_set = set(randint_list)
-
-        while len(randint_list) != len(randint_set):
-            randint_list = [random.randint(1, self.row_count) for x in range(10)]
-            randint_set = set(randint_list)
-
-        return randint_list
 
     def sign_out(self):
 

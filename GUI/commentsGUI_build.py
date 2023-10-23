@@ -2,17 +2,10 @@ import tkinter as tk
 from GUI.scrollable_frame import VerticalScrolledFrame
 import sqlite3
 from GUI.comment_build import CommentBuild
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
-from database.models import User, Track, Comment, Like
-import time
-
-engine = create_engine('sqlite:///database/clippr.sqlite3', echo=True)
-
 
 class commentsGUI(tk.Toplevel):
 
-    def __init__(self, track_id, user_id):
+    def __init__(self, track_id, controller):
 
         super().__init__()
         self.config(background="white")
@@ -23,7 +16,7 @@ class commentsGUI(tk.Toplevel):
         self.conn = sqlite3.connect("database/clippr.sqlite3")
         self.cursor = self.conn.cursor()
         self.comment_adder = None
-        self.user_id = user_id
+        self.controller = controller
 
         self.icon_photos = {"plus": tk.PhotoImage(file=r"GUI/images/plus.png"),
                             }
@@ -44,24 +37,18 @@ class commentsGUI(tk.Toplevel):
         self.comments_title.grid(row=0, column=0, sticky="w", padx=(20,10), pady=(10,20))
         self.add_comment_button.grid(row=0, column=1, sticky="w", padx=0, pady=(10, 20))
 
-
-        get_comments_query = f"""SELECT id FROM comment WHERE track_id = ?"""
-
-        self.cursor.execute(get_comments_query, (self.track_id,))
-        self.comment_list = self.cursor.fetchall()
-        index = 0
+        self.comment_list = self.controller.fetch_comments(self.track_id)
 
         if len(self.comment_list) != 0:
             for i in self.comment_list:
-                index += 1
-                self.new_track = CommentBuild(i[0])
-                self.new_track.build(self.frame, ((4 * index) - 2))
+                self.new_track = CommentBuild(i, self.controller)
+                self.new_track.build(self.frame, ((4 * i) - 2))
         else:
             self.nothing_yet_label.grid(row=1, column=0, columnspan=10, padx=(173,0), pady=(46,0))
 
     def add_comment(self):
         if self.comment_adder is None:
-            self.comment_adder = addCommentGUI(self.track_id, self.user_id)
+            self.comment_adder = addCommentGUI(self.track_id, self.controller)
             self.comment_adder.bind("<Destroy>", lambda x: [self.allow_add_comment()])
 
     def allow_add_comment(self):
@@ -74,20 +61,15 @@ class commentsGUI(tk.Toplevel):
         self.build()
 
 class addCommentGUI(tk.Toplevel):
-    def __init__(self, track_id, user_id):
+    def __init__(self, track_id, controller):
 
         super().__init__()
         self.config(background="white")
         self.geometry("400x100")
         self.iconbitmap(r"GUI\images\icon.ico")
-        self.resizable(True, True)
-        self.conn = sqlite3.connect("database/clippr.sqlite3")
-        self.cursor = self.conn.cursor()
+        self.resizable(False, False)
         self.track_id = track_id
-        self.user_id = user_id
-
-        self.icon_photos = {"plus": tk.PhotoImage(file=r"GUI/images/plus.png"),
-                            }
+        self.controller = controller
 
         self.build()
 
@@ -108,12 +90,6 @@ class addCommentGUI(tk.Toplevel):
 
     def post_comment(self):
         self.comment_text = self.text_entry.get()
-
-        new_comment = Comment(user_id=self.user_id, track_id=self.track_id, text=self.comment_text)
-
-        with Session(engine) as sess:
-            sess.add(new_comment)
-            sess.commit()
-
+        self.controller.post_comment(self.track_id, self.comment_text)
         self.text_entry.destroy()
         self.destroy()

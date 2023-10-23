@@ -4,7 +4,7 @@ from models import User, Track, Comment, Like
 import sqlite3
 
 engine = create_engine('sqlite:///clippr.sqlite3', echo=True)
-conn = sqlite3.connect("clippr.sqlite3")
+conn = sqlite3.connect("../clippr.sqlite3")
 cursor = conn.cursor()
 
 

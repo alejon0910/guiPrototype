@@ -1,34 +1,29 @@
 import tkinter as tk
 from PIL import Image, ImageEnhance, ImageTk
-import time
-import sqlite3
 from just_playback import Playback
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
-from database.models import User, Track, Comment, Like
 from GUI.commentsGUI_build import commentsGUI
-import sqlite3
-
-engine = create_engine('sqlite:///database/clippr.sqlite3', echo=True)
-
 
 class TrackBuild:
 
-    def __init__(self, track_id, viewer_id):
+    track_instances = []
 
-        self.conn = sqlite3.connect("database/clippr.sqlite3")
-        self.cursor = self.conn.cursor()
+    def __init__(self, track_id, controller, playback_controller):
 
-        self.fetch_info(track_id)
-
+        self.controller = controller
+        self.playback_controller = playback_controller
         self.track_id = track_id
-        self.viewer_id = viewer_id
-        self.title = self.track_info[2]
-        self.genre = self.track_info[3]
-        self.mood = self.track_info[4]
-        self.instrument = self.track_info[5]
-        self.sound_filepath = self.track_info[6]
-        self.cover_filepath = self.track_info[7]
+        self.track_info = self.controller.fetch_track_info(self.track_id)
+
+        TrackBuild.track_instances.append(self)
+
+        self.viewer_id = self.controller.current_id
+        self.artist = self.controller.fetch_username(self.track_info[0])
+        self.title = self.track_info[1]
+        self.genre = self.track_info[2]
+        self.mood = self.track_info[3]
+        self.instrument = self.track_info[4]
+        self.sound_filepath = self.track_info[5]
+        self.cover_filepath = self.track_info[6]
 
         self.cover_image = Image.open(self.cover_filepath)
         self.cover_image = self.cover_image.resize((83, 83))
@@ -78,8 +73,10 @@ class TrackBuild:
         self.cover_canvas.bind("<Enter>", lambda x: [self.darken()])
         self.cover_canvas.bind("<Leave>", lambda x: [self.lighten()])
         self.cover_canvas.bind("<Button-1>", lambda x: [self.do_play_pause()])
+        self.playback_controller.change_flag.bind("<Configure>", self.shared_force_pause)
 
-        self.config_like()
+        self.liked = self.controller.config_like(self.track_id, self.viewer_id)
+        self.config_like_button()
 
     def lighten(self):
         self.cover_photoimage = ImageTk.PhotoImage(self.cover_image)
@@ -89,65 +86,48 @@ class TrackBuild:
         self.cover_photoimage = ImageTk.PhotoImage(self.brightener.enhance(0.5))
         self.cover_canvas.itemconfig(self.cover_label, image=self.cover_photoimage)
 
-    def do_play_pause(self):
+    def force_pause(self):
+        if self.playback_controller.playing_id != self.track_id:
+            self.cover_canvas.itemconfig(self.play_pause, image=self.playpng)
+            self.playing = False
+            self.cover_canvas.bind("<Leave>", lambda x: [self.lighten()])
 
+    def do_play_pause(self):
         if self.playing:
             self.cover_canvas.itemconfig(self.play_pause, image=self.playpng)
             self.playing = False
             self.cover_canvas.bind("<Leave>", lambda x: [self.lighten()])
 
-            self.playback.pause()
+            self.playback_controller.pause()
 
         else:
             self.cover_canvas.itemconfig(self.play_pause, image=self.pausepng)
             self.playing = True
             self.cover_canvas.bind("<Leave>", lambda x: [self.darken()])
 
-            self.playback.load_file(self.sound_filepath)
-            self.playback.play()
-
-    def fetch_info(self, track_id):
-        get_info_query = f"""SELECT * FROM track WHERE id = {track_id}"""
-        self.cursor.execute(get_info_query)
-        self.track_info = self.cursor.fetchall()[0]
-
-        get_artist_query = f"""SELECT username FROM user WHERE id = {self.track_info[1]}"""
-        self.cursor.execute(get_artist_query)
-        self.artist = self.cursor.fetchall()[0]
+            self.playback_controller.play(self.sound_filepath, self.track_id)
 
     def like_track(self):
 
-        if not self.liked:
-            self.new_like = Like(user_id=self.viewer_id, track_id=self.track_id)
+        self.controller.like_track(self.track_id, self.viewer_id)
+        self.liked = self.controller.config_like(self.track_id, self.viewer_id)
+        self.config_like_button()
 
-            with Session(engine) as sess:
-                sess.add(self.new_like)
-                sess.commit()
-            self.liked = True
+    def config_like_button(self):
+        if self.liked:
             self.like_button.config(image=self.heartedpng)
         else:
-            get_like_status_query = f"""DELETE FROM like WHERE track_id = ? AND user_id = ?"""
-            self.cursor.execute(get_like_status_query, (self.track_id, self.viewer_id,))
-            self.conn.commit()
-            self.liked = False
             self.like_button.config(image=self.heartpng)
 
-    def config_like(self):
-
-        get_like_status_query = f"""SELECT id FROM like WHERE track_id = ? AND user_id = ?"""
-        self.cursor.execute(get_like_status_query, (self.track_id, self.viewer_id,))
-
-        if len(self.cursor.fetchall()) == 0:
-            self.liked = False
-            self.like_button.config(image=self.heartpng)
-        else:
-            self.liked = True
-            self.like_button.config(image=self.heartedpng)
 
     def open_comments(self):
         if self.comments is None:
-            self.comments = commentsGUI(self.track_id, self.viewer_id)
+            self.comments = commentsGUI(self.track_id, self.controller)
             self.comments.empty_label.bind("<Destroy>", lambda x: self.allow_comments())
 
     def allow_comments(self):
         self.comments = None
+
+    def shared_force_pause(cls, event):
+        for instance in cls.track_instances:
+            instance.force_pause()

@@ -1,11 +1,9 @@
 import tkinter as tk
 from GUI.signupGUI_build import signupGUI
-import sqlite3
-import hashlib
 
 class loginGUI(tk.Tk):
 
-    def __init__(self, master):
+    def __init__(self, controller):
         super().__init__()
 
         self.title("clippr")
@@ -16,8 +14,7 @@ class loginGUI(tk.Tk):
         self.access = False
         self.id = None
         self.signup = None
-
-        self.fetch_all_details()
+        self.controller = controller
 
         self.clippr_photo = tk.PhotoImage(file=r"GUI\images\clipprblack.png")
 
@@ -36,7 +33,7 @@ class loginGUI(tk.Tk):
 
         self.username_entry.bind("<Button-1>", lambda x: [username_clicked(), self.username_entry.config(fg="black")])
         self.password_entry.bind("<Button-1>", lambda x: [password_clicked(), self.password_entry.config(fg="black", show='•')])
-        self.bind("<Return>", lambda x: [self.get_details(), self.sign_in()])
+        self.bind("<Return>", lambda x: [self.sign_in()])
 
         def username_clicked():
             if self.username_entry.get() == "Username":
@@ -63,51 +60,34 @@ class loginGUI(tk.Tk):
     def get_details(self):
 
         if self.username_entry.get() != "" and self.username_entry.get() != "Username" and self.password_entry.get() != "" and self.password_entry.get() != "Password":
-            self.username = self.username_entry.get()
-            self.password = self.password_entry.get()
-            self.hash_password()
+            username = self.username_entry.get()
+            password = self.password_entry.get()
+            return username, password
 
         else:
             self.error_label.place(x=114, y=280)
             self.error_label.config(text="Please enter a username and password")
             self.error_label.after(1500, lambda: self.error_label.config(text=""))
+            return None, None
 
     def sign_in(self):
-        if self.username in self.username_list and self.password == self.password_hash_list[self.username_list.index(self.username)]:
-            get_id_query = """SELECT id FROM user WHERE username = ?"""
-            self.cursor.execute(get_id_query, (self.username,))
-            self.id = self.cursor.fetchall()[0][0]
-            self.access = True
+
+        username, password = self.get_details()
+        self.access = self.controller.sign_in(username, password)
+
+        if self.access:
             self.destroy()
-        elif self.username_entry.get() != "Username" and self.password_entry.get() != "Password":
+        else:
             self.error_label.place(x=144, y=280)
             self.error_label.config(text="Incorrect username or password")
             self.error_label.after(1500, lambda: self.error_label.config(text=""))
 
+
     def open_signup(self):
         if self.signup is None:
-            self.signup = signupGUI(self)
+            self.signup = signupGUI(self, self.controller)
             self.signup.username_entry.bind("<Destroy>", lambda x: self.allow_signup())
 
-    def hash_password(self):
-        self.hasher = hashlib.sha256()
-        self.hasher.update(bytes(self.password, 'utf-8'))
-        self.password = self.hasher.hexdigest()
-
-    def fetch_all_details(self):
-
-        self.conn = sqlite3.connect("database/clippr.sqlite3")
-        self.cursor = self.conn.cursor()
-
-        get_usernames_query = f"""SELECT username FROM user ORDER BY id"""
-
-        self.cursor.execute(get_usernames_query)
-        self.username_list = [username[0] for username in self.cursor.fetchall()]
-
-        get_password_hashes_query = f"""SELECT password_hash FROM user ORDER BY id"""
-
-        self.cursor.execute(get_password_hashes_query)
-        self.password_hash_list = [password[0] for password in self.cursor.fetchall()]
 
     def allow_signup(self):
         self.signup = None
