@@ -9,7 +9,7 @@ class loginGUI(tk.Tk):
         self.title("clippr")
         self.iconbitmap(r"GUI\images\icon.ico")
         self.config(background="white")
-        self.geometry("550x350")
+        self.geometry("550x370")
         self.resizable(False, False)
         self.access = False
         self.id = None
@@ -25,8 +25,12 @@ class loginGUI(tk.Tk):
                                        relief="flat", fg="#b0b0b0", font=("Soleil-Book",10))
         self.password_entry = tk.Entry(self, background="#e0e0e0", highlightcolor="#b0b0b0", highlightthickness=1,
                                        relief="flat", fg="#b0b0b0", font=("Soleil-Book",10))
-        self.error_label = tk.Label(self, background="white", text="", highlightthickness=0, fg="black", font=("Soleil-Book",10))
-        self.create_account_button = tk.Button(self, background="white", text="No sign in? Create Account", highlightthickness=0, fg="black", font=("Soleil-Bold",10), relief="flat", command=self.open_signup)
+        self.error_label = tk.Label(self, background="white", text="", highlightthickness=0, fg="#b0b0b0", font=("Soleil-Book",10))
+
+        self.login_button = tk.Button(self, background="white", text="Log In",
+                                               highlightthickness=0, fg="black", font=("SoleilXb", 10),
+                                               relief="flat", command=self.sign_in)
+        self.create_account_button = tk.Button(self, background="white", text="No sign in? Create Account", highlightthickness=0, fg="black", font=("Soleil-Book",9), relief="flat", command=self.open_signup)
 
         self.username_entry.insert(0, "Username")
         self.password_entry.insert(0, "Password")
@@ -55,7 +59,8 @@ class loginGUI(tk.Tk):
         self.clippr_logo.place(x=80, y=20)
         self.username_entry.place(x=200, y=170, width=150, height=25)
         self.password_entry.place(x=200, y=200, width=150, height=25)
-        self.create_account_button.place(x=156, y=240)
+        self.login_button.place(x=250, y=240)
+        self.create_account_button.place(x=195, y=270)
 
     def get_details(self):
 
@@ -65,7 +70,7 @@ class loginGUI(tk.Tk):
             return username, password
 
         else:
-            self.error_label.place(x=114, y=280)
+            self.error_label.place(x=154, y=300)
             self.error_label.config(text="Please enter a username and password")
             self.error_label.after(1500, lambda: self.error_label.config(text=""))
             return None, None
@@ -78,7 +83,7 @@ class loginGUI(tk.Tk):
         if self.access:
             self.destroy()
         else:
-            self.error_label.place(x=144, y=280)
+            self.error_label.place(x=170, y=300)
             self.error_label.config(text="Incorrect username or password")
             self.error_label.after(1500, lambda: self.error_label.config(text=""))
 

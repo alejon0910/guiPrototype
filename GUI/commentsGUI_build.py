@@ -13,8 +13,6 @@ class commentsGUI(tk.Toplevel):
         self.iconbitmap(r"GUI\images\icon.ico")
         self.resizable(False, False)
         self.track_id = track_id
-        self.conn = sqlite3.connect("database/clippr.sqlite3")
-        self.cursor = self.conn.cursor()
         self.comment_adder = None
         self.controller = controller
 

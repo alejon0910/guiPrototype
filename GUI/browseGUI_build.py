@@ -1,9 +1,10 @@
 import tkinter as tk
 from GUI.scrollable_frame import VerticalScrolledFrame
 from GUI.track_build import TrackBuild
+from GUI.playlist_build import PlaylistBuild, CreatePlaylistWindow
 from GUI.uploadGUI_build import uploadGUI
 import tkinter.ttk as ttk
-from database.playback_controller import PlaybackController
+from PIL import ImageTk
 
 class browserGUI(tk.Tk):
 
@@ -16,25 +17,31 @@ class browserGUI(tk.Tk):
         self.geometry("650x850")
         self.resizable(False, False)
         self.upload = None
+        self.playlist_creator = None
         self.signed_out = False
         self.controller = controller
-        self.playback_controller = PlaybackController()
 
         self.icon_photos = {"clippr": tk.PhotoImage(file=r"GUI/images/clippr2.png"),
                             "home": tk.PhotoImage(file=r"GUI/images/home.png"),
                             "sounds": tk.PhotoImage(file=r"GUI/images/sounds.png"),
                             "liked": tk.PhotoImage(file=r"GUI/images/liked.png"),
                             "search": tk.PhotoImage(file=r"GUI/images/search.png"),
+                            "playlists": tk.PhotoImage(file=r"GUI/images/mixes.png"),
                             "upload": tk.PhotoImage(file=r"GUI/images/upload.png"),
                             "profile": tk.PhotoImage(file=r"GUI/images/profile.png"),
                             "sign out": tk.PhotoImage(file=r"GUI/images/signout.png"),
                             "home_title": tk.PhotoImage(file=r"GUI/images/bighomeicon.png"),
                             "sounds_title": tk.PhotoImage(file=r"GUI/images/bigsoundsicon.png"),
                             "liked_title": tk.PhotoImage(file=r"GUI/images/biglikedicon.png"),
+                            "playlists_title": tk.PhotoImage(file=r"GUI/images/bigplaylistsicon.png"),
+                            "plus": tk.PhotoImage(file=r"GUI/images/plus.png"),
                             "blank": tk.PhotoImage()
                             }
 
+        self.init_build()
 
+
+    def init_build(self):
         # Tabs
         self.nav_tab = tk.Frame(self, width=110, height=850, bd=0, highlightthickness=0, background="#1c1c1c")
         self.browse_tab = VerticalScrolledFrame(self, width=482, height=10000, background="white")
@@ -51,14 +58,16 @@ class browserGUI(tk.Tk):
                                       highlightthickness=0, cursor="hand2", command=self.browse_liked)
         self.search_button = tk.Button(self, image=self.icon_photos["search"], activebackground="#1c1c1c",
                                        borderwidth=0, highlightthickness=0, cursor="hand2", command=self.open_search)
+        self.playlists_button = tk.Button(self, image=self.icon_photos["playlists"], activebackground="#1c1c1c",
+                                       borderwidth=0, highlightthickness=0, cursor="hand2", command=self.browse_playlists)
         self.upload_button = tk.Button(self, image=self.icon_photos["upload"], activebackground="#1c1c1c",
-                                       borderwidth=0, highlightthickness=0, command=lambda: self.open_upload(), cursor="hand2")
-        self.profile_button = tk.Button(self, image=self.icon_photos["profile"], activebackground="#1c1c1c", borderwidth=0,
-                                    highlightthickness=0, cursor="hand2")
+                                       borderwidth=0, highlightthickness=0, command=lambda: self.open_upload(),
+                                       cursor="hand2")
+        self.profile_button = tk.Button(self, image=self.icon_photos["profile"], activebackground="#1c1c1c",
+                                        borderwidth=0,
+                                        highlightthickness=0, cursor="hand2")
         self.signout_button = tk.Button(self, image=self.icon_photos["sign out"], activebackground="#1c1c1c",
                                         borderwidth=0, highlightthickness=0, cursor="hand2", command=self.sign_out)
-
-        self.nav_tab.bind("<Destroy>", lambda x: [self.playback_controller.destroy()])
 
         # Place tabs
         self.nav_tab.place(x=0, y=0)
@@ -70,6 +79,7 @@ class browserGUI(tk.Tk):
         self.sounds_button.place(x=13, y=96)
         self.liked_button.place(x=11, y=130)
         self.search_button.place(x=13, y=158)
+        self.playlists_button.place(x=13, y=186)
         self.upload_button.place(x=11, y=759)
         self.profile_button.place(x=13, y=786)
         self.signout_button.place(x=13, y=813)
@@ -92,7 +102,7 @@ class browserGUI(tk.Tk):
         self.username_label.grid(column=4, row=0, sticky="e", padx=15, pady=(26, 20), columnspan=99)
 
         for i in self.controller.fetch_home_results():
-            self.new_track = TrackBuild(i, self.controller, self.playback_controller)
+            self.new_track = TrackBuild(i, self.controller, None)
             self.new_track.build(self.browse_tab, ((5*i)-4))
 
     def browse_sounds(self):
@@ -107,7 +117,7 @@ class browserGUI(tk.Tk):
         self.title_label.grid(column=0, row=0, sticky="w", padx=(10, 0), pady=20, columnspan=99)
 
         for i in self.controller.fetch_sounds_results():
-            self.new_track = TrackBuild(i, self.controller, self.playback_controller)
+            self.new_track = TrackBuild(i, self.controller, None)
             self.new_track.build(self.browse_tab, ((5 * i) - 4))
 
     def browse_liked(self):
@@ -122,7 +132,7 @@ class browserGUI(tk.Tk):
         self.title_label.grid(column=0, row=0, sticky="w", padx=(10, 0), pady=20, columnspan=99)
 
         for i in self.controller.fetch_liked_results():
-            self.new_track = TrackBuild(i, self.controller, self.playback_controller)
+            self.new_track = TrackBuild(i, self.controller, None)
             self.new_track.build(self.browse_tab, ((5 * i) - 3))
 
     def open_search(self):
@@ -163,7 +173,7 @@ class browserGUI(tk.Tk):
         self.track_list = self.controller.fetch_searched_results(self.search_term, self.genre_term, self.mood_term, self.instrument_term)
 
         for i in self.track_list:
-            self.new_track = TrackBuild(i, self.controller, self.playback_controller)
+            self.new_track = TrackBuild(i, self.controller, None)
             self.new_track.build(self.browse_tab, ((5 * i) - 3))
 
     def get_dropdown_options(self):
@@ -183,13 +193,51 @@ class browserGUI(tk.Tk):
         else:
             self.instrument_term = tuple(self.controller.instrument_options)
 
+    def browse_playlists(self):
+        self.top_tab.destroy()
+        self.browse_tab.destroy()
+        self.browse_tab = VerticalScrolledFrame(self, width=522, height=10000, background="white")
+        self.browse_tab.pack(side=tk.RIGHT)
+
+        self.title_label = tk.Label(self.browse_tab, image=self.icon_photos["playlists_title"], font=("SoleilBk", 23),
+                                    bg="white", borderwidth=0, highlightthickness=0)
+        self.new_playlist_button = tk.Button(self.browse_tab, image=self.icon_photos["plus"], highlightthickness=0,
+                                             borderwidth=0,
+                                             command=lambda: [self.open_create_playlist(), self.browse_playlists()])
+        self.title_label.grid(column=0, row=0, sticky="w", padx=(10, 0), pady=20, columnspan=3)
+        self.new_playlist_button.grid(column=4, row=0, sticky="w", padx=(10, 0), pady=20)
+
+
+        for i in self.controller.fetch_playlists():
+            self.new_playlist = PlaylistBuild(i, self.controller, self)
+            self.new_playlist.build(self.browse_tab, ((5 * i) - 4))
+
+    def open_playlist(self, playlist_id):
+        self.top_tab.destroy()
+        self.browse_tab.destroy()
+
+        self.browse_tab = VerticalScrolledFrame(self, width=522, height=10000, background="white")
+        self.browse_tab.pack(side=tk.RIGHT)
+
+        for i in self.controller.fetch_playlist_tracks(playlist_id):
+            self.new_track = TrackBuild(i, self.controller, playlist_id)
+            self.new_track.build(self.browse_tab, ((5 * i) - 3))
+
     def open_upload(self):
         if self.upload is None:
             self.upload = uploadGUI(self, self.controller)
             self.upload.clipprlogo_label.bind("<Destroy>", lambda x: self.allow_upload())
 
+    def open_create_playlist(self):
+        if self.playlist_creator is None:
+            self.playlist_creator = CreatePlaylistWindow(self, self.controller)
+            self.playlist_creator.clipprlogo_label.bind("<Destroy>", lambda x: [self.allow_playlist_create(), self.browse_playlists()])
+
     def allow_upload(self):
         self.upload = None
+
+    def allow_playlist_create(self):
+        self.playlist_creator = None
 
     def sign_out(self):
 

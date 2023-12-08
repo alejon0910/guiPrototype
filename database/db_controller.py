@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, select, or_
 from sqlalchemy.orm import Session
-from database.models import User, Track, Comment, Like
+from database.models import User, Track, Comment, Like, Playlist, Playlist_Track
 import random
 import hashlib
 import os
@@ -12,7 +12,7 @@ class Controller:
 
     def __init__(self):
         self.current_id = None
-        self.engine = create_engine('sqlite:///clippr.sqlite3', echo=True)
+        self.engine = create_engine('sqlite:///database/clippr.sqlite3', echo=True)
 
         self.genre_options = ["pop",
                               "hip-hop",
@@ -72,10 +72,61 @@ class Controller:
             track_list = [row[0] for row in session.execute(query)]
             return track_list
 
+    def fetch_playlists(self):
+        with Session(self.engine) as session:
+            playlist_list = [playlist_id[0] for playlist_id in session.query(Playlist.id).filter_by(user_id=self.current_id)]
+
+        return playlist_list
+
+    def fetch_playlist_names(self):
+        with Session(self.engine) as session:
+            playlist_list = [playlist_name[0] for playlist_name in session.query(Playlist.name).filter_by(user_id=self.current_id)]
+
+        return playlist_list
+
+    def add_track_to_playlist(self, track_id, playlist_id):
+        with Session(self.engine) as session:
+            new_pt = Playlist_Track(track_id=track_id, playlist_id=playlist_id)
+            session.add(new_pt)
+            session.commit()
+
+    def remove_track_from_playlist(self, track_id, playlist_id):
+        with Session(self.engine) as session:
+            session.query(Playlist_Track).filter_by(track_id=track_id, playlist_id=playlist_id).delete()
+            session.commit()
+
+    def create_playlist(self, name, cover_file):
+
+        cover_file = r"GUI\images\testcover2.png" if cover_file is None else cover_file
+
+        shutil.copy(cover_file, r"database/covers")
+        cover_file = r"database/covers/" + os.path.basename(cover_file)
+
+        with Session(self.engine) as session:
+            new_playlist = Playlist(name=name, user_id=self.current_id, cover_filepath=cover_file)
+            session.add(new_playlist)
+            session.commit()
+
+    def delete_playlist(self, id):
+        with Session(self.engine) as session:
+            session.query(Playlist).filter_by(id=id).delete()
+            session.commit()
+
+    def fetch_playlist_info(self, id):
+        with Session(self.engine) as session:
+            playlist_object = [info for info in session.query(Playlist).filter_by(id=id)][0]
+            playlist_info = [playlist_object.name, playlist_object.cover_filepath, len([track_id[0] for track_id in session.query(Playlist_Track.track_id).filter_by(playlist_id=id)])]
+        return playlist_info
+
+    def fetch_playlist_tracks(self, playlist_id):
+        with Session(self.engine) as session:
+            playlist_tracks = [track_id[0] for track_id in session.query(Playlist_Track.track_id).filter_by(playlist_id=playlist_id).order_by(Playlist_Track.id)]
+        print(playlist_tracks)
+        return playlist_tracks
+
     def generate_random_set(self):
         with Session(self.engine) as session:
             track_count = session.query(Track).count()
-            print(track_count)
         return random.sample(range(1, track_count), 10)
 
     def sign_in(self, username, password):
@@ -111,8 +162,6 @@ class Controller:
                 self.current_username = username
 
                 return "success"
-
-
 
     def hash_password(self, password):
         hasher = hashlib.sha256()

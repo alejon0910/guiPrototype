@@ -8,7 +8,7 @@ class signupGUI(tk.Toplevel):
 
         self.iconbitmap(r"GUI\images\icon.ico")
         self.config(background="white")
-        self.geometry("500x250")
+        self.geometry("500x280")
         self.resizable(False, False)
         self.controller = controller
 
@@ -21,8 +21,10 @@ class signupGUI(tk.Toplevel):
                                        relief="flat", fg="#b0b0b0", font=("Soleil-Book",10))
         self.password_entry = tk.Entry(self, background="#e0e0e0", highlightcolor="#b0b0b0", highlightthickness=1,
                                        relief="flat", fg="#b0b0b0", font=("Soleil-Book",10))
-        self.error_label = tk.Label(self, background="white", text="", highlightthickness=0, fg="black", font=("Soleil-Book",10))
-        self.create_account_button = tk.Button(self, background="white", text="No sign in? Create Account", highlightthickness=0, fg="black", font=("Soleil-Bold",10), relief="flat")
+        self.error_label = tk.Label(self, background="white", text="", highlightthickness=0, fg="#b0b0b0", font=("Soleil-Book",10))
+        self.signup_button = tk.Button(self, background="white", text="Sign Up",
+                                      highlightthickness=0, fg="black", font=("SoleilXb", 10),
+                                      relief="flat", command=lambda: [self.get_details(), self.sign_up()])
 
         self.username_entry.insert(0, "Username")
         self.password_entry.insert(0, "Password")
@@ -49,9 +51,10 @@ class signupGUI(tk.Toplevel):
                 self.username_entry.config(fg="#b0b0b0", show='')
 
         # Place navigation buttons
-        self.clippr_logo.place(x=372, y=194)
+        self.clippr_logo.place(x=372, y=224)
         self.username_entry.place(x=176, y=98, width=150, height=25)
         self.password_entry.place(x=176, y=128, width=150, height=25)
+        self.signup_button.place(x=225, y=168)
 
     def get_details(self):
 
@@ -61,7 +64,7 @@ class signupGUI(tk.Toplevel):
             return username, password
 
         else:
-            self.error_label.place(x=114, y=280)
+            self.error_label.place(x=131, y=200)
             self.error_label.config(text="Please enter a username and password")
             self.error_label.after(1500, lambda: self.error_label.config(text=""))
             return None, None
@@ -72,11 +75,11 @@ class signupGUI(tk.Toplevel):
         sign_up_attempt = self.controller.sign_up(username, password)
 
         if sign_up_attempt == "username in use":
-            self.error_label.place(x=174, y=180)
+            self.error_label.place(x=176, y=200)
             self.error_label.config(text="Username already exists")
             self.error_label.after(1500, lambda: self.error_label.config(text=""))
         elif sign_up_attempt == "username too long":
-            self.error_label.place(x=120, y=170)
+            self.error_label.place(x=118, y=200)
             self.error_label.config(text="Username cannot be more than 16 characters")
             self.error_label.after(1500, lambda: self.error_label.config(text=""))
         else:

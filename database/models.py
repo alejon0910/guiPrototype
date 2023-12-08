@@ -70,3 +70,24 @@ class Like(Base):
 
     def __repr__(self):
         return f"<Like({self.user_id}, {self.track_id})>"
+
+class Playlist(Base):
+    __tablename__ = 'playlist'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, unique=False, nullable=False)
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    cover_filepath = Column(String, unique=False, nullable=False)
+
+    def __repr__(self):
+        return f"<Playlist({self.id})>"
+
+
+class Playlist_Track(Base):
+    __tablename__ = 'playlist_track'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    playlist_id = Column(Integer, ForeignKey('playlist.id'), nullable=False)
+    track_id = Column(Integer, ForeignKey('track.id'), nullable=False)
+
+    def __repr__(self):
+        return f"<Playlist_Track({self.id})>"
+

@@ -11,6 +11,7 @@ class PlaybackController(tk.Tk):
         self.change_flag = tk.Label(self)
         self.change_flag.pack()
         self.width = 0
+        self.iconify()
 
     def play(self, filepath, playing_id):
         self.playback.load_file(filepath)

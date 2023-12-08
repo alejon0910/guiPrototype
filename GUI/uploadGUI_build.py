@@ -75,7 +75,6 @@ class uploadGUI(tk.Toplevel):
         self.emptyphoto_button.config(image=self.cover)
 
 
-
     def post_track(self):
         if None not in [self.track_file, self.genre_dropdown.get(), self.mood_dropdown.get(), self.instrument_dropdown.get()]:
             self.controller.post_track(self.title_entry.get().lower(), self.genre_dropdown.get(), self.mood_dropdown.get(),

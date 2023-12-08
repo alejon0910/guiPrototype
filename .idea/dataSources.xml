@@ -13,7 +13,7 @@
         </library>
       </libraries>
     </data-source>
-    <data-source source="LOCAL" name="clippr [2]" uuid="c3b796f4-baf4-4a05-91d8-504a71ee1c89">
+    <data-source source="LOCAL" name="clippr [2]" uuid="d724c52c-c615-4812-aca4-e8f955d6d5c1">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
