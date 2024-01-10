@@ -4,7 +4,6 @@ from GUI.track_build import TrackBuild
 from GUI.playlist_build import PlaylistBuild, CreatePlaylistWindow
 from GUI.uploadGUI_build import uploadGUI
 import tkinter.ttk as ttk
-from PIL import ImageTk
 
 class browserGUI(tk.Tk):
 
