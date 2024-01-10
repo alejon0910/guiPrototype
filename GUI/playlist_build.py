@@ -1,7 +1,5 @@
 import tkinter as tk
 from PIL import Image, ImageEnhance, ImageTk
-from just_playback import Playback
-from GUI.commentsGUI_build import commentsGUI
 import tkinter.ttk as ttk
 from tkinter import filedialog
 
@@ -87,7 +85,7 @@ class AddToPlaylistWindow(tk.Toplevel):
         self.build()
     def build(self):
         self.add_label = tk.Label(self, text="add to playlist", font=("Soleil-Bold", 16), fg="#1c1c1c", bg="white")
-        self.playlist_options = ttk.Combobox(self, values=self.playlist_name_list, state="readonly")
+        self.playlist_options = ttk.Combobox(self, values=self.playlist_name_list, state="readonly", font=("SoleilLt-Italic", 8))
         self.add_button = tk.Button(self, background="white", text="add", highlightthickness=0, fg="black", font=("SoleilXb", 10), command=self.add_track)
 
         self.add_label.grid(row=0, column=0, sticky="news", padx=42, pady=(20,5))
