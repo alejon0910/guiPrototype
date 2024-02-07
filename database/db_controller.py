@@ -13,7 +13,7 @@ class Controller:
 
     def __init__(self):
         self.current_id = None
-        self.engine = create_engine('sqlite:///database/clippr.sqlite3', echo=True)
+        self.engine = create_engine('sqlite:///database/clippr.sqlite', echo=True)
 
         self.genre_options = ["pop",
                               "hip-hop",
