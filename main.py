@@ -1,9 +1,6 @@
 from GUI.browseGUI_build import browserGUI
 from GUI.loginGUI_build import loginGUI
 from database.db_controller import Controller
-from ctypes import windll
-
-#windll.shcore.SetProcessDpiAwareness(1)
 
 class App:
     def __init__(self):

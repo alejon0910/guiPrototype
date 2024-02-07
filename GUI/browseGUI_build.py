@@ -100,9 +100,12 @@ class browserGUI(tk.Tk):
                                        font=("SoleilXb", 15), anchor="e", bd=0, padx=0)
         self.username_label.grid(column=4, row=0, sticky="e", padx=15, pady=(26, 20), columnspan=99)
 
+        index = 1
+
         for i in self.controller.fetch_home_results():
             self.new_track = TrackBuild(i, self.controller, None)
-            self.new_track.build(self.browse_tab, ((5*i)-4))
+            self.new_track.build(self.browse_tab, ((5*index)-4))
+            index += 1
 
     def browse_sounds(self):
 

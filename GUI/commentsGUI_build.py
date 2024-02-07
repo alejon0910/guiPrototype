@@ -1,6 +1,5 @@
 import tkinter as tk
 from GUI.scrollable_frame import VerticalScrolledFrame
-import sqlite3
 from GUI.comment_build import CommentBuild
 
 class commentsGUI(tk.Toplevel):

@@ -144,7 +144,3 @@ class TrackBuild:
 
     def allow_comments(self):
         self.comments = None
-
-    def shared_force_pause(cls, event):
-        for instance in cls.track_instances:
-            instance.force_pause()

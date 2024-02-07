@@ -5,6 +5,7 @@ import random
 import hashlib
 import os
 import shutil
+from statistics import mean, stdev
 
 
 
@@ -39,11 +40,24 @@ class Controller:
 
     def fetch_home_results(self):
 
+        track_list = []
+        boosted_tags = self.find_preference_outliers()
+
+
+
         random_set = self.generate_random_set()
 
         with Session(self.engine) as session:
-            track_list = [track_id[0] for track_id in session.query(Track.id).filter(Track.id.in_(random_set))]
 
+            if len(boosted_tags[0]) != 0:
+                track_list.append(random.choice([track_id[0] for track_id in session.query(Track.id).filter(Track.genre.in_(boosted_tags[0]))]))
+            if len(boosted_tags[1]) != 0:
+                track_list.append(random.choice([track_id[0] for track_id in session.query(Track.id).filter(Track.mood.in_(boosted_tags[1]))]))
+            if len(boosted_tags[2]) != 0:
+                track_list.append(random.choice([track_id[0] for track_id in session.query(Track.id).filter(Track.instrument.in_(boosted_tags[2]))]))
+            track_list += random_set
+            track_list = list(dict.fromkeys(track_list))
+            print(track_list)
         return track_list
 
     def fetch_sounds_results(self):
@@ -121,7 +135,6 @@ class Controller:
     def fetch_playlist_tracks(self, playlist_id):
         with Session(self.engine) as session:
             playlist_tracks = [track_id[0] for track_id in session.query(Playlist_Track.track_id).filter_by(playlist_id=playlist_id).order_by(Playlist_Track.id)]
-        print(playlist_tracks)
         return playlist_tracks
 
     def generate_random_set(self):
@@ -255,3 +268,67 @@ class Controller:
         with Session(self.engine) as session:
             session.add(new_comment)
             session.commit()
+
+    def construct_frequency_tables(self):
+
+        genre_table = {"pop": 0,
+                        "hip-hop": 0,
+                        "edm": 0,
+                        "rock": 0,
+                        "alternative": 0,
+                        "cinematic": 0,
+                        "classical": 0}
+
+        mood_table = {"chill": 0,
+                             "hype": 0,
+                             "sad": 0,
+                             "dark": 0,
+                             "upbeat": 0,
+                             "epic": 0}
+
+        instrument_table = {"piano": 0,
+                            "drums": 0,
+                            "bass": 0,
+                            "synth": 0,
+                            "guitar": 0,
+                            "strings": 0,
+                            "vocal": 0}
+
+
+
+        with Session(self.engine) as session:
+            likes = [like[0] for like in session.query(Like.track_id).filter_by(user_id=self.current_id)]
+            track_objects = [info for info in session.query(Track).filter(Track.id.in_(likes)).all()]
+
+            for track in track_objects:
+                tags = [track.genre, track.mood, track.instrument]
+                genre_table[tags[0]] += 1
+                mood_table[tags[1]] += 1
+                instrument_table[tags[2]] += 1
+
+        return genre_table, mood_table, instrument_table
+
+    def find_preference_outliers(self):
+
+        genre_table, mood_table, instrument_table = self.construct_frequency_tables()
+
+        preferred_genres = []
+        preferred_moods = []
+        preferred_instruments = []
+
+        genre_frequencies = [genre_table[genre] for genre in genre_table]
+        for genre in genre_table:
+            if genre_table[genre] >= mean(genre_frequencies) + (1.5 * stdev(genre_frequencies)):
+                preferred_genres.append(genre)
+
+        mood_frequencies = [mood_table[mood] for mood in mood_table]
+        for mood in mood_table:
+            if mood_table[mood] >= mean(mood_frequencies) + (1.5 * stdev(mood_frequencies)):
+                preferred_moods.append(mood)
+
+        instrument_frequencies = [instrument_table[instrument] for instrument in instrument_table]
+        for instrument in instrument_table:
+            if instrument_table[instrument] >= mean(instrument_frequencies) + (1.5 * stdev(instrument_frequencies)):
+                preferred_instruments.append(instrument)
+
+        return preferred_genres, preferred_moods, preferred_instruments
