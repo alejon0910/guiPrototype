@@ -1,1 +1,2 @@
+MUST BE RUN IN PYTHON 3.9
 Run create_db, then write_to_db, then main
