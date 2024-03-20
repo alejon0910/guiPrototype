@@ -1,1 +1,3 @@
+MUST BE RUN IN PYTHON 3.9
+Download and install Soleil font, download tracks folder (both in OneDrive/Project Requirements) and copy into project directory inside database folder
 Run create_db, then write_to_db, then main
