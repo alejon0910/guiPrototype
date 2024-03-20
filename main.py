@@ -6,7 +6,7 @@ class App:
     def __init__(self):
         self.loop()
 
-
+    # Loops through login-browse process, restarting if the user presses 'sign out'
     def loop(self):
 
         self.controller = Controller()

@@ -75,26 +75,3 @@ class VerticalScrolledFrame:
 
     def __str__(self):
         return str(self.outer)
-
-#  **** SCROLL BAR TEST *****
-if __name__ == "__main__":
-    root = tk.Tk()
-    root.title("Scrollbar Test")
-    root.geometry('400x500')
-
-    frame = VerticalScrolledFrame(root,
-        width=300,
-        borderwidth=2,
-        relief=tk.SUNKEN,
-        background="light gray")
-    #frame.grid(column=0, row=0, sticky='nsew') # fixed size
-    frame.pack(fill=tk.BOTH, expand=True) # fill window
-
-    for i in range(30):
-        label = tk.Label(frame, text="This is a label "+str(i))
-        label.grid(column=1, row=i, sticky=tk.W)
-
-        text = tk.Entry(frame, textvariable="text")
-        text.grid(column=2, row=i, sticky=tk.W)
-
-    root.mainloop()

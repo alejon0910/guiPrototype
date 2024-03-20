@@ -13,11 +13,12 @@ likes = Table('likes',
               )
 
 
+# This is the structure I used to store a user in the database
 class User(Base):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String, unique=True, nullable=False)
-    password_hash = Column(String, unique=True, nullable=False)
+    password_hash = Column(String, unique=False, nullable=False)
     profile_picture = Column(BLOB, unique=False, nullable=True)
 
     liked_tracks = relationship("Track",
@@ -29,6 +30,7 @@ class User(Base):
         return f"<User({self.username})>"
 
 
+# This is the structure I used to store a track in the database
 class Track(Base):
     __tablename__ = 'track'
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -49,6 +51,7 @@ class Track(Base):
         return f"<Track({self.title})>"
 
 
+# This is the structure I used to store a comment in the database
 class Comment(Base):
     __tablename__ = 'comment'
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -59,6 +62,7 @@ class Comment(Base):
     def __repr__(self):
         return f"<Comment({self.id})>"
 
+# This is the structure I used to store a like in the database
 class Like(Base):
     __tablename__ = 'like'
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -71,6 +75,7 @@ class Like(Base):
     def __repr__(self):
         return f"<Like({self.user_id}, {self.track_id})>"
 
+# This is the structure I used to store a playlist in the database
 class Playlist(Base):
     __tablename__ = 'playlist'
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -82,6 +87,7 @@ class Playlist(Base):
         return f"<Playlist({self.id})>"
 
 
+# This is the intermediary of the many-to-many track-playlist relationship
 class Playlist_Track(Base):
     __tablename__ = 'playlist_track'
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -90,4 +96,3 @@ class Playlist_Track(Base):
 
     def __repr__(self):
         return f"<Playlist_Track({self.id})>"
-

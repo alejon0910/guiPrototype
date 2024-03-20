@@ -6,6 +6,13 @@ from PIL import Image, ImageTk
 class uploadGUI(tk.Toplevel):
 
     def __init__(self, master, controller):
+        """
+
+        Parameters
+        ----------
+        master
+        controller
+        """
         super(uploadGUI, self).__init__(master)
         self.transient(master)
 
@@ -23,6 +30,7 @@ class uploadGUI(tk.Toplevel):
 
         self.build()
 
+    # This method defines and places all necessary widgets to display the upload subwindow
     def build(self):
 
         self.clipprlogo_label = tk.Label(self, image=self.icon_photos["clippr"], borderwidth=0, highlightthickness=0)
@@ -55,17 +63,21 @@ class uploadGUI(tk.Toplevel):
         self.cover_file = None
         self.track_file = None
 
+    # This method clears the title entry's filler text when it is clicked
     def title_clicked(self):
 
         if self.title_entry.get() == "Title (excl. filetype)":
             self.title_entry.delete(0, "end")
             self.title_entry.config(fg="black")
 
+    # This method, via a file dialog, allows the user to select the track file from their files
     def select_track(self):
 
         self.track_file = filedialog.askopenfilename(filetypes=[("audio files", "*.mp3; *.wav")])
-        self.selectfile_button.config(image=self.icon_photos["file_selected"])
+        if self.track_file != "":
+            self.selectfile_button.config(image=self.icon_photos["file_selected"])
 
+    # This method, via a file dialog, allows the user to select the track's cover from their files
     def select_cover(self):
 
         self.cover_file = filedialog.askopenfilename(filetypes=[("image files", "*.png; *.jpg; *.jpeg")])
@@ -74,13 +86,14 @@ class uploadGUI(tk.Toplevel):
         self.cover = ImageTk.PhotoImage(self.cover)
         self.emptyphoto_button.config(image=self.cover)
 
-
+    # This method, if all the window's fields are satisfied, posts the track via the controller object and closes when done
     def post_track(self):
-        if None not in [self.track_file, self.genre_dropdown.get(), self.mood_dropdown.get(), self.instrument_dropdown.get()]:
+        if "" not in [self.track_file, self.title_entry, self.genre_dropdown.get(), self.mood_dropdown.get(), self.instrument_dropdown.get()] and self.title_entry.get() != "Title (excl. filetype)":
             self.controller.post_track(self.title_entry.get().lower(), self.genre_dropdown.get(), self.mood_dropdown.get(),
                                     self.instrument_dropdown.get(), self.track_file, self.cover_file)
             self.destroy()
 
+    # This method 'frees up' another upload subwindow to be opened when it is closed
     def allow_upload(self):
         self.master.uploading = False
 

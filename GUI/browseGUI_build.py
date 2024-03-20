@@ -39,7 +39,7 @@ class browserGUI(tk.Tk):
 
         self.init_build()
 
-
+    # This method defines and places all base widgets in the window
     def init_build(self):
         # Tabs
         self.nav_tab = tk.Frame(self, width=110, height=850, bd=0, highlightthickness=0, background="#1c1c1c")
@@ -85,6 +85,7 @@ class browserGUI(tk.Tk):
 
         self.browse_home()
 
+    # This method defines and places all necessary widgets & TrackBuild objects to display the home page
     def browse_home(self):
 
         self.top_tab.destroy()
@@ -107,6 +108,7 @@ class browserGUI(tk.Tk):
             self.new_track.build(self.browse_tab, ((5*index)-4))
             index += 1
 
+    # This method defines and places all necessary widgets and TrackBuild objects to display the 'sounds' page
     def browse_sounds(self):
 
         self.top_tab.destroy()
@@ -122,6 +124,7 @@ class browserGUI(tk.Tk):
             self.new_track = TrackBuild(i, self.controller, None)
             self.new_track.build(self.browse_tab, ((5 * i) - 4))
 
+    # This method defines and places all necessary widgets and TrackBuild objects to display the 'liked' page
     def browse_liked(self):
 
         self.top_tab.destroy()
@@ -137,6 +140,7 @@ class browserGUI(tk.Tk):
             self.new_track = TrackBuild(i, self.controller, None)
             self.new_track.build(self.browse_tab, ((5 * i) - 3))
 
+    # This method defines and places all necessary widgets to display the 'search' page
     def open_search(self):
 
         self.top_tab.destroy()
@@ -166,6 +170,7 @@ class browserGUI(tk.Tk):
         self.search_entry.bind("<Button-1>", lambda x: [self.search_clicked(), self.search_entry.config(fg="black")])
         self.search_entry.bind("<Return>", lambda x: [self.retrieve_search()])
 
+    # This method displays all relevant tracks upon the user making a search
     def retrieve_search(self):
 
         self.search_term = self.search_entry.get().lower()
@@ -178,6 +183,7 @@ class browserGUI(tk.Tk):
             self.new_track = TrackBuild(i, self.controller, None)
             self.new_track.build(self.browse_tab, ((5 * i) - 3))
 
+    # This method returns the user's selected filter options selected upon pressing search
     def get_dropdown_options(self):
 
         if len(self.genre_dropdown.get()) != 0:
@@ -195,6 +201,7 @@ class browserGUI(tk.Tk):
         else:
             self.instrument_term = tuple(self.controller.instrument_options)
 
+    # This method defines and places all necessary widgets and PlaylistBuild objects to display the 'playlists' page
     def browse_playlists(self):
         self.top_tab.destroy()
         self.browse_tab.destroy()
@@ -214,6 +221,7 @@ class browserGUI(tk.Tk):
             self.new_playlist = PlaylistBuild(i, self.controller, self)
             self.new_playlist.build(self.browse_tab, ((5 * i) - 4))
 
+    # This method defines and places all necessary TrackBuild objects to display the tracks in a playlist
     def open_playlist(self, playlist_id):
         self.top_tab.destroy()
         self.browse_tab.destroy()
@@ -225,33 +233,38 @@ class browserGUI(tk.Tk):
             self.new_track = TrackBuild(i, self.controller, playlist_id)
             self.new_track.build(self.browse_tab, ((5 * i) - 3))
 
+    # This method opens an upload subwindow, preventing any more from being opened until it is destroyed
     def open_upload(self):
         if self.upload is None:
             self.upload = uploadGUI(self, self.controller)
             self.upload.clipprlogo_label.bind("<Destroy>", lambda x: self.allow_upload())
 
+    # This method opens a 'create playlist' subwindow, preventing any more from being opened until it is destroyed
     def open_create_playlist(self):
         if self.playlist_creator is None:
             self.playlist_creator = CreatePlaylistWindow(self, self.controller)
             self.playlist_creator.clipprlogo_label.bind("<Destroy>", lambda x: [self.allow_playlist_create(), self.browse_playlists()])
 
+    # This method 'frees up' a new upload subwindow to be opened
     def allow_upload(self):
         self.upload = None
 
+    # This method frees up a new 'create playlist' subwindow to be opened
     def allow_playlist_create(self):
         self.playlist_creator = None
 
+    # This method closes the browsing window upon signing out and prompts the login window to reopen
     def sign_out(self):
-
         self.destroy()
         self.signed_out = True
 
+    # This method clears the search bar's filler text when it is clicked
     def search_clicked(self):
-
         if self.search_entry.get() == "Search":
             self.search_entry.delete(0, "end")
             self.search_entry.config(fg="black")
 
+    # This method clears all widgets in the browsing frame to refresh its contents
     def refresh_results(self):
         self.browse_tab.destroy()
         self.browse_tab = VerticalScrolledFrame(self, width=522, height=10000, background="white")

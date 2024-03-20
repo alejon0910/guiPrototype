@@ -2,6 +2,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from models import User, Track, Comment, Like, Playlist, Playlist_Track
 
+# This is test data to be written to the database for the purposes of demonstrating the project
+
 users = [User(username="evernowbeats", password_hash="86654d079cddef5e6cfba21ac6e39c6d5e2409556eae2577b46515062a138f33"),
          User(username="calvinharris", password_hash="1bac7f7261147f9d8bc935c823d1a40ba439a60e6593b6875ca2218a52ea23bf"),
          User(username="will.is.love", password_hash="33cc47b3f5939d7a88fb35fa2fe014cb01e3deadf2971830648028ded4d54c56"),
@@ -32,7 +34,7 @@ tracks = [Track(title="domino.wav", artist=1, genre="hip-hop", mood="dark", inst
          Track(title="assumptions.mp3", artist=6, genre="edm", mood="upbeat", instrument="synth", sound_filepath="database/tracks/assumptions-official-visualiser.mp3", cover_filepath="database/covers/artworks-xhoDmsYktkbS-0-t500x500.jpg"),
          Track(title="birthday.mp3", artist=5, genre="hip-hop", mood="chill", instrument="piano", sound_filepath="database/tracks/Potter Payper x Dave Type Beat - Birthday UK Rap Instrumental 2022 (Prod. Rahh Beats).mp3", cover_filepath="database/covers/artworks-SyKvrxsj8nDB7y2P-zy81Xg-t240x240.jpg"),
          Track(title="hummingbird.mp3", artist=7, genre="hip-hop", mood="chill", instrument="drums", sound_filepath="database/tracks/hummingbird-visualizer.mp3", cover_filepath="database/covers/spider-man-across-the-spider-verse-soundtrack-1685634511.jpg"),
-         Track(title="serotonin.mp3", artist=4, genre="pop", mood="chill", instrument="guitar", sound_filepath="database/tracks/serotonin-official-visualiser.mp3", cover_filepath="database/covers/artworks-B3ccNPfH9y5V-0-t500x500.jpg"),
+         Track(title="serotonin.mp3", artist=6, genre="pop", mood="chill", instrument="guitar", sound_filepath="database/tracks/serotonin-official-visualiser.mp3", cover_filepath="database/covers/artworks-B3ccNPfH9y5V-0-t500x500.jpg"),
          Track(title="a_hero_falls.mp3", artist=8, genre="cinematic", mood="epic", instrument="strings", sound_filepath="database/tracks/a-hero-falls.mp3", cover_filepath="database/covers/ab67616d0000b273c5c223ca9d87d5bf9bd73c5f.jpeg"),
          Track(title="cloud_nine.wav", artist=1, genre="pop", mood="chill", instrument="synth", sound_filepath="database/tracks/cloud nine.wav", cover_filepath="database/covers/dodji-djibom-YPDFvqHFwRA-unsplash.jpg"),
          Track(title="slide.mp3", artist=2, genre="pop", mood="chill", instrument="piano", sound_filepath="database/tracks/slide-official-audio-ft-frank-ocean-migos.mp3", cover_filepath="database/covers/Calvin_Harris_ Slide _single_cover.jpg"),

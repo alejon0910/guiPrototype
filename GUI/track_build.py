@@ -7,7 +7,14 @@ from GUI.playlist_build import AddToPlaylistWindow
 class TrackBuild:
 
     def __init__(self, track_id, controller, playlist_id):
+        """
 
+        Parameters
+        ----------
+        track_id
+        controller
+        playlist_id
+        """
         self.controller = controller
         self.track_id = track_id
         self.track_info = self.controller.fetch_track_info(self.track_id)
@@ -40,8 +47,15 @@ class TrackBuild:
         self.playback = Playback()
         self.brightener = ImageEnhance.Brightness(self.cover_image)
 
+    # This function builds, using Tkinter widgets, a visual representation of a track in a given Tkinter frame and given row
     def build(self, frame, row):
+        """
 
+        Parameters
+        ----------
+        frame
+        row
+        """
         self.artist_label = tk.Label(frame, text=self.artist, font=("Soleil-Book", 12), bg="white")
         self.title_label = tk.Label(frame, text=self.title, font=("Soleil-Bold", 22), bg="white")
 
@@ -81,8 +95,8 @@ class TrackBuild:
         self.liked = self.controller.config_like(self.track_id, self.viewer_id)
         self.config_like_button()
 
+    # This function destroys all the track's Tkinter widgets
     def destroy(self):
-
         self.artist_label.destroy()
         self.title_label.destroy()
         self.tags.destroy()
@@ -92,15 +106,17 @@ class TrackBuild:
         self.cover_canvas.destroy()
         self.track_space.destroy()
 
-
-    def lighten(self):
-        self.cover_photoimage = ImageTk.PhotoImage(self.cover_image)
-        self.cover_canvas.itemconfig(self.cover_label, image=self.cover_photoimage)
-
+    # This function darkens the track's cover image (used when mouse hovers over it)
     def darken(self):
         self.cover_photoimage = ImageTk.PhotoImage(self.brightener.enhance(0.5))
         self.cover_canvas.itemconfig(self.cover_label, image=self.cover_photoimage)
 
+    # This function lightens the track's cover image (used when mouse leaves cover image, reversing the effect of self.darken())
+    def lighten(self):
+        self.cover_photoimage = ImageTk.PhotoImage(self.cover_image)
+        self.cover_canvas.itemconfig(self.cover_label, image=self.cover_photoimage)
+
+    # This function plays or pauses a track, adjusting widgets accordingly (play button becomes pause button, cover image permanently dark)
     def do_play_pause(self):
         if self.playing:
             self.cover_canvas.itemconfig(self.play_pause, image=self.pngs["play"])
@@ -117,24 +133,27 @@ class TrackBuild:
             self.playback.load_file(self.sound_filepath)
             self.playback.play()
 
+    # This function likes a track, using the controller object to add this like to the database
     def like_track(self):
 
         self.controller.like_track(self.track_id, self.viewer_id)
         self.liked = self.controller.config_like(self.track_id, self.viewer_id)
         self.config_like_button()
 
+    # This function configures the like button to be red if liked, black if unliked
     def config_like_button(self):
         if self.liked:
             self.like_button.config(image=self.pngs["hearted"])
         else:
             self.like_button.config(image=self.pngs["heart"])
 
-
+    # This function opens a comment subwindow, preventing any more from being opened until closed
     def open_comments(self):
         if self.comments is None:
             self.comments = commentsGUI(self.track_id, self.controller)
             self.comments.empty_label.bind("<Destroy>", lambda x: self.allow_comments())
 
+    # This function adds or removes a track to a playlist, depending on whether the track is being displayed on a browsing page or a playlist
     def add_or_remove(self):
         if self.playlist_id is not None:
             self.controller.remove_track_from_playlist(self.track_id, self.playlist_id)
@@ -142,5 +161,6 @@ class TrackBuild:
         else:
             self.add_window = AddToPlaylistWindow(self.track_id, self.controller)
 
+    # This function 'frees up' a comment subwindow to be opened when another is closed
     def allow_comments(self):
         self.comments = None

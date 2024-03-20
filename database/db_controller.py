@@ -38,28 +38,28 @@ class Controller:
                                    "strings",
                                    "vocal"]
 
+    # This method generates a random set of tracks to display,
+    # ensures the first track is chosen among the algorithm's boosted genres
+    # (etc. for mood & instrument)
     def fetch_home_results(self):
 
-        track_list = []
         boosted_tags = self.find_preference_outliers()
-
-
-
         random_set = self.generate_random_set()
+        track_list = random_set
 
         with Session(self.engine) as session:
 
             if len(boosted_tags[0]) != 0:
-                track_list.append(random.choice([track_id[0] for track_id in session.query(Track.id).filter(Track.genre.in_(boosted_tags[0]))]))
+                track_list[0] = random.choice([track_id[0] for track_id in session.query(Track.id).filter(Track.genre.in_(boosted_tags[0]))])
             if len(boosted_tags[1]) != 0:
-                track_list.append(random.choice([track_id[0] for track_id in session.query(Track.id).filter(Track.mood.in_(boosted_tags[1]))]))
+                track_list[1] = random.choice([track_id[0] for track_id in session.query(Track.id).filter(Track.mood.in_(boosted_tags[1]))])
             if len(boosted_tags[2]) != 0:
-                track_list.append(random.choice([track_id[0] for track_id in session.query(Track.id).filter(Track.instrument.in_(boosted_tags[2]))]))
-            track_list += random_set
-            track_list = list(dict.fromkeys(track_list))
-            print(track_list)
+                track_list[2] = random.choice([track_id[0] for track_id in session.query(Track.id).filter(Track.instrument.in_(boosted_tags[2]))])
+
+        track_list = list(dict.fromkeys(random_set))
         return track_list
 
+    # This method returns the ids of all tracks uploaded by the user
     def fetch_sounds_results(self):
 
         with Session(self.engine) as session:
@@ -67,6 +67,7 @@ class Controller:
 
         return track_list
 
+    # This method returns the ids of all tracks liked by the user
     def fetch_liked_results(self):
 
         with Session(self.engine) as session:
@@ -75,6 +76,7 @@ class Controller:
 
         return track_list
 
+    # This method returns the ids of all tracks matching the search term & tag filters in a search
     def fetch_searched_results(self, search_term, genre_term, mood_term, instrument_term):
 
         with Session(self.engine) as session:
@@ -86,33 +88,37 @@ class Controller:
             track_list = [row[0] for row in session.execute(query)]
             return track_list
 
+    # This method returns the ids of all playlists created by the user
     def fetch_playlists(self):
         with Session(self.engine) as session:
             playlist_list = [playlist_id[0] for playlist_id in session.query(Playlist.id).filter_by(user_id=self.current_id)]
 
         return playlist_list
 
+    # This method returns the names of all playlists created by the user
     def fetch_playlist_names(self):
         with Session(self.engine) as session:
             playlist_list = [playlist_name[0] for playlist_name in session.query(Playlist.name).filter_by(user_id=self.current_id)]
 
         return playlist_list
 
+    # This method adds a track to a specified playlist
     def add_track_to_playlist(self, track_id, playlist_id):
         with Session(self.engine) as session:
             new_pt = Playlist_Track(track_id=track_id, playlist_id=playlist_id)
             session.add(new_pt)
             session.commit()
 
+    # This method removes a track from a specified playlist
     def remove_track_from_playlist(self, track_id, playlist_id):
         with Session(self.engine) as session:
             session.query(Playlist_Track).filter_by(track_id=track_id, playlist_id=playlist_id).delete()
             session.commit()
 
+    # This method creates a playlist given a name and cover image's filepath
     def create_playlist(self, name, cover_file):
 
         cover_file = r"GUI\images\testcover2.png" if cover_file is None else cover_file
-
         shutil.copy(cover_file, r"database/covers")
         cover_file = r"database/covers/" + os.path.basename(cover_file)
 
@@ -121,27 +127,35 @@ class Controller:
             session.add(new_playlist)
             session.commit()
 
+    # This method deletes a specified playlist
     def delete_playlist(self, id):
         with Session(self.engine) as session:
             session.query(Playlist).filter_by(id=id).delete()
             session.commit()
 
+    # This method returns all necessary information about a playlist to be displayed
     def fetch_playlist_info(self, id):
         with Session(self.engine) as session:
             playlist_object = [info for info in session.query(Playlist).filter_by(id=id)][0]
             playlist_info = [playlist_object.name, playlist_object.cover_filepath, len([track_id[0] for track_id in session.query(Playlist_Track.track_id).filter_by(playlist_id=id)])]
         return playlist_info
 
+    # This method returns all track ids from a given playlist id
     def fetch_playlist_tracks(self, playlist_id):
         with Session(self.engine) as session:
             playlist_tracks = [track_id[0] for track_id in session.query(Playlist_Track.track_id).filter_by(playlist_id=playlist_id).order_by(Playlist_Track.id)]
         return playlist_tracks
 
+    # This method returns the ids of 10 random tracks
     def generate_random_set(self):
         with Session(self.engine) as session:
             track_count = session.query(Track).count()
         return random.sample(range(1, track_count), 10)
 
+    # This method attempts a sign-in given a username and password,
+    # returns True if the details match details in the database and sets
+    # attributes (e.g. current_id) to this user's details
+    # otherwise, returns False
     def sign_in(self, username, password):
 
         with Session(self.engine) as session:
@@ -158,13 +172,19 @@ class Controller:
         else:
             return False
 
+    # This method attempts a sign-up, checking for username clashes and invalid inputs
+    # If successful, adds these details to the database; otherwise, returns the relevant error
     def sign_up(self, username, password):
 
         with Session(self.engine) as session:
             if username in [name[0] for name in session.query(User.username)]:
                 return "username in use"
-            elif len(username) > 16:
-                return "username too long"
+            elif len(username) > 16 or len(username) < 4:
+                return "username bad length"
+            elif True not in [character.isalpha() for character in username]:
+                return "username no alpha"
+            elif len(password) < 4:
+                return "password too short"
             else:
                 new_user = User(username=username, password_hash=self.hash_password(password))
 
@@ -176,11 +196,13 @@ class Controller:
 
                 return "success"
 
+    # This method hashes and returns a given password using the sha256 algorithm
     def hash_password(self, password):
         hasher = hashlib.sha256()
         hasher.update(bytes(password, 'utf-8'))
         return hasher.hexdigest()
 
+    # This method returns all relevant info (e.g. artist) about a track with a given id
     def fetch_track_info(self, id):
         with Session(self.engine) as session:
             track_object = [info for info in session.query(Track).filter_by(id=id)][0]
@@ -188,11 +210,13 @@ class Controller:
                             track_object.instrument, track_object.sound_filepath, track_object.cover_filepath]
         return track_info
 
+    # # This method returns the username of a user given their id
     def fetch_username(self, id):
         with Session(self.engine) as session:
             username = [name for name in session.query(User.username).filter_by(id=id)][0][0]
         return username
 
+    # This method returns whether the user has liked a track of a given id
     def config_like(self, track_id, user_id):
 
         with Session(self.engine) as session:
@@ -203,6 +227,8 @@ class Controller:
         else:
             return True
 
+    # This method adds or removes a like to the database, depending on whether the user
+    # has already liked the track
     def like_track(self, track_id, user_id):
 
         liked = self.config_like(track_id, user_id)
@@ -219,6 +245,7 @@ class Controller:
                 session.query(Like).filter_by(track_id=track_id, user_id=user_id).delete()
                 session.commit()
 
+    # This method adds a track to the database given all relevant input data
     def post_track(self, title, genre, mood, instrument, track_file, cover_file=r"GUI\images\testcover2.png"):
 
         cover_file = r"GUI\images\testcover2.png" if cover_file is None else cover_file
@@ -237,6 +264,8 @@ class Controller:
             session.add(new_track)
             session.commit()
 
+    # This method removes any file extensions added by the user in the title entry,
+    # returns the title + the track's file extension
     def add_filetype(self, string, track_file):
 
         string.replace(".mp3", "")
@@ -249,12 +278,13 @@ class Controller:
 
         return title
 
+    # This method returns all comment ids on a track given its id
     def fetch_comments(self, track_id):
-
         with Session(self.engine) as session:
             comment_list = [comment[0] for comment in session.query(Comment.id).filter_by(track_id=track_id)]
         return comment_list
 
+    # This method returns all relevant info about a comment given its id
     def fetch_comment_info(self, comment_id):
         with Session(self.engine) as session:
             comment_object = [info for info in session.query(Comment).filter_by(id=comment_id)][0]
@@ -262,6 +292,7 @@ class Controller:
             comment_info = [comment_object.text, commenter_username]
         return comment_info
 
+    # This method adds a comment to the database
     def post_comment(self, track_id, text):
         new_comment = Comment(user_id=self.current_id, track_id=track_id, text=text)
 
@@ -269,6 +300,8 @@ class Controller:
             session.add(new_comment)
             session.commit()
 
+    # This method fetches all the user's likes, returns dictionaries showing the frequency of each
+    # genre, mood and instrument in their likes
     def construct_frequency_tables(self):
 
         genre_table = {"pop": 0,
@@ -308,6 +341,8 @@ class Controller:
 
         return genre_table, mood_table, instrument_table
 
+    # This method uses the recommendation algorithm outlined in the design section to return
+    # any genres, moods, and instruments that are outliers in terms of their frequency in the user's likes
     def find_preference_outliers(self):
 
         genre_table, mood_table, instrument_table = self.construct_frequency_tables()

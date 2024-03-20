@@ -5,7 +5,13 @@ from GUI.comment_build import CommentBuild
 class commentsGUI(tk.Toplevel):
 
     def __init__(self, track_id, controller):
+        """
 
+        Parameters
+        ----------
+        track_id
+        controller
+        """
         super().__init__()
         self.config(background="white")
         self.geometry("500x300")
@@ -14,12 +20,11 @@ class commentsGUI(tk.Toplevel):
         self.track_id = track_id
         self.comment_adder = None
         self.controller = controller
-
-        self.icon_photos = {"plus": tk.PhotoImage(file=r"GUI/images/plus.png"),
-                            }
+        self.icon_photos = {"plus": tk.PhotoImage(file=r"GUI/images/plus.png")}
 
         self.build()
 
+    # This method defines and places all necessary widgets & CommentBuild objects to display the comments
     def build(self):
 
         self.frame = VerticalScrolledFrame(self, width=500, height=10000, background="white")
@@ -43,15 +48,19 @@ class commentsGUI(tk.Toplevel):
         else:
             self.nothing_yet_label.grid(row=1, column=0, columnspan=10, padx=(173,0), pady=(46,0))
 
+    # This method opens an 'add comment' window, preventing any more from being opened until it is destroyed
     def add_comment(self):
         if self.comment_adder is None:
             self.comment_adder = addCommentGUI(self.track_id, self.controller)
             self.comment_adder.bind("<Destroy>", lambda x: [self.allow_add_comment()])
 
+    # This method frees up an 'add comment' subwindow to be opened,
+    # and refreshes the comments window to show any newly added comments
     def allow_add_comment(self):
         self.refresh()
         self.comment_adder = None
 
+    # This method refreshes the comments window to show any newly added comments
     def refresh(self):
         self.empty_label.pack_forget()
         self.frame.destroy()
@@ -59,7 +68,13 @@ class commentsGUI(tk.Toplevel):
 
 class addCommentGUI(tk.Toplevel):
     def __init__(self, track_id, controller):
+        """
 
+        Parameters
+        ----------
+        track_id
+        controller
+        """
         super().__init__()
         self.config(background="white")
         self.geometry("400x100")
@@ -70,6 +85,7 @@ class addCommentGUI(tk.Toplevel):
 
         self.build()
 
+    # This method defines and places all necessary widgets in the window
     def build(self):
 
         self.text_entry = tk.Entry(self, background="#e0e0e0", highlightcolor="#b0b0b0", highlightthickness=1,
@@ -80,11 +96,13 @@ class addCommentGUI(tk.Toplevel):
         self.bind("<Return>", lambda x: [self.post_comment()])
         self.text_entry.place(x=92, y=33)
 
+    # This method clears the filler text in the comment entry when it is clicked
     def entry_clicked(self):
         self.text_entry.config(fg="black")
         if self.text_entry.get() == "Add comment":
             self.text_entry.delete(0, "end")
 
+    # This method posts a comment given the text entered in the comment entry
     def post_comment(self):
         self.comment_text = self.text_entry.get()
         self.controller.post_comment(self.track_id, self.comment_text)
